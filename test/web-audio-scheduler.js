@@ -155,13 +155,12 @@ describe("WebAudioScheduler", ()=> {
 
       assert.deepEqual(passed, [
         [   0, 0.000 + 0.005 ],
-        [ 100, 0.100 + 0.005 ],
       ]);
 
-      assert(sched.events.length === 3); // f, g, h
+      assert(sched.events.length === 4); // 100, 125, 150, 175
     });
     it("00:00.025 -> 00:00.125", ()=> {
-      assert(sched.events.length === 3); // f, g, h
+      assert(sched.events.length === 4); // 100, 125, 150, 175
 
       sched.insert(50, (e)=> {
         passed.push([ 50, e.playbackTime ]);
@@ -176,13 +175,13 @@ describe("WebAudioScheduler", ()=> {
       assert.deepEqual(passed, [
         [  50, 0.050 + 0.005 ],
         [  75, 0.075 + 0.005 ],
-        [ 125, 0.125 + 0.005 ],
+        [ 100, 0.100 + 0.005 ],
       ]);
 
-      assert(sched.events.length === 2); // g, h
+      assert(sched.events.length === 3); // 125, 150, 175
     });
-    it("00:00.050 -> 00:00.150", ()=> {
-      assert(sched.events.length === 2); // g, h
+    it("00:00.050 -> 00:00.150+", ()=> {
+      assert(sched.events.length === 3); // 125, 150, 175
 
       sched.insert(25, (e)=> {
         passed.push([ 25, e.playbackTime ]);
@@ -193,13 +192,14 @@ describe("WebAudioScheduler", ()=> {
 
       assert.deepEqual(passed, [
         [  25, 0.050 + 0.005 ],
+        [ 125, 0.125 + 0.005 ],
         [ 150, 0.150 + 0.005 ],
       ]);
 
-      assert(sched.events.length === 1); // h
+      assert(sched.events.length === 1); // 175
     });
     it("00:00.075 -> 00:00.175", ()=> {
-      assert(sched.events.length === 1); // h
+      assert(sched.events.length === 1); // 175
 
       sched.stop();
       sched.stop();
@@ -207,12 +207,13 @@ describe("WebAudioScheduler", ()=> {
       tickable.tick(25);
       sched.context.$process(0.025);
 
-      assert.deepEqual(passed, []);
+      assert.deepEqual(passed, [
+      ]);
 
-      assert(sched.events.length === 1); // h
+      assert(sched.events.length === 1); // 175
     });
     it("00:00.100 -> 00:00.200", ()=> {
-      assert(sched.events.length === 1); // h
+      assert(sched.events.length === 1); // 175
 
       sched.insert(250, (e)=> {
         passed.push([ 250, e.playbackTime ]);
@@ -223,10 +224,10 @@ describe("WebAudioScheduler", ()=> {
 
       assert.deepEqual(passed, []);
 
-      assert(sched.events.length === 2); // h, i
+      assert(sched.events.length === 2); // 175, 250
     });
     it("00:00.125 -> 00:00.225", ()=> {
-      assert(sched.events.length === 2); // h, i
+      assert(sched.events.length === 2); // 175, 250
 
       sched.start();
       sched.start();
@@ -238,10 +239,10 @@ describe("WebAudioScheduler", ()=> {
         [ 175, 0.175 + 0.005 ],
       ]);
 
-      assert(sched.events.length === 1); // i
+      assert(sched.events.length === 1); // 250
     });
     it("00:00.150 -> 00:00.250", ()=> {
-      assert(sched.events.length === 1); // i
+      assert(sched.events.length === 1); // 250
 
       sched.stop();
       sched.stop();
@@ -251,10 +252,10 @@ describe("WebAudioScheduler", ()=> {
 
       assert.deepEqual(passed, []);
 
-      assert(sched.events.length === 1); // i
+      assert(sched.events.length === 1); // 250
     });
     it("00:00.175 -> 00:00.275", ()=> {
-      assert(sched.events.length === 1); // i
+      assert(sched.events.length === 1); // 250
 
       sched.remove();
 

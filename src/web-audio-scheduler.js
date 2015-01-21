@@ -139,7 +139,7 @@ module.exports = class WebAudioScheduler {
 
     this.playbackTime = t0;
 
-    while (events.length && events[0].time <= t1) {
+    while (events.length && events[0].time < t1) {
       let event = events.shift();
 
       this.playbackTime = Math.max(this.context.currentTime, event.time) + this.offsetTime;
