@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>web-audio-scheduler</title>
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href=//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css>
+    <style>
+      body { font-family:"Source Sans Pro",sans-serif }
+      #code { padding:0;margin:0;background:white;border:none }
+      #app { margin: 10px 0 }
+      #app .btn { width:100px }
+    </style>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
+    <script src="build/web-audio-scheduler.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <h1>web-audio-scheduler</h1>
+        <div>Event Scheduler for Web Audio API | <a href="https://github.com/mohayonao/web-audio-scheduler" target="github">GitHub</a></div>
+      </div>
+      <div id="app">
+        <button id="button" class="btn btn-default">Start</button>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">example: metronome</h3>
+        </div>
+        <div class="panel-body">
+          <pre class="prettyprint" id="code"></pre>
+        </div>
+      </div>
+    </div>
+    <script id="example">
+      var audioContext = new AudioContext();
+      var scheduler = new WebAudioScheduler({
+        context: audioContext
+      });
+
+      function mertonome(e) {
+        ticktack(e.playbackTime + 0.000, 880, 1.00);
+        ticktack(e.playbackTime + 0.500, 220, 0.05);
+        ticktack(e.playbackTime + 1.000, 220, 0.05);
+        ticktack(e.playbackTime + 1.500, 220, 0.05);
+        scheduler.insert(e.playbackTime + 2, mertonome);
+      }
+
+      function ticktack(t0, freq, dur) {
+        var osc = audioContext.createOscillator();
+        var amp = audioContext.createGain();
+
+        osc.frequency.value = freq;
+        amp.gain.setValueAtTime(0.5, t0);
+        amp.gain.exponentialRampToValueAtTime(1e-6, t0 + dur);
+
+        osc.start(t0);
+
+        osc.connect(amp);
+        amp.connect(audioContext.destination);
+
+        scheduler.insert(t0 + dur, function(e) {
+          osc.stop(e.playbackTime);
+          scheduler.nextTick(function() {
+            osc.disconnect();
+            amp.disconnect();
+          });
+        });
+      }
+
+      function start() {
+        scheduler.start(mertonome);
+      }
+
+      function stop() {
+        scheduler.stop();
+      }
+    </script>
+    <script>
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      var $ = document.getElementById.bind(document);
+
+      window.onload = function() {
+        "use strict";
+
+        var isPlaying = false;
+
+        $("button").onclick = function(e) {
+          isPlaying = !isPlaying;
+
+          if (isPlaying) {
+            start();
+            e.target.textContent = "Stop";
+          } else {
+            stop();
+            e.target.textContent = "Start";
+          }
+        };
+
+        // code
+        $("code").textContent = $("example").textContent;
+        prettyPrint();
+      };
+    </script>
+  </body>
+</html>
