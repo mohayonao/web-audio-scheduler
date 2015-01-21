@@ -9,6 +9,9 @@ var _prototypeProperties = function (child, staticProps, instanceProps) {
 
 /* istanbul ignore next */
 var AudioContext = global.AudioContext || global.webkitAudioContext;
+var defaults = function (value, defaultValue) {
+  return value !== undefined ? value : defaultValue;
+};
 
 /**
  * @class WebAudioScheduler
@@ -22,13 +25,13 @@ module.exports = (function () {
   function WebAudioScheduler() {
     var opts = arguments[0] === undefined ? {} : arguments[0];
     this.context = opts.context || new AudioContext();
-    this.interval = opts.interval || 0.025;
-    this.aheadTime = opts.aheadTime || 0.1;
-    this.offsetTime = opts.offsetTime || 0.005;
-    this.timerAPI = opts.timerAPI || global;
-    this.toSeconds = opts.toSeconds || function (value) {
+    this.interval = +defaults(opts.interval, 0.025);
+    this.aheadTime = +defaults(opts.aheadTime, 0.1);
+    this.offsetTime = +defaults(opts.offsetTime, 0.005);
+    this.timerAPI = defaults(opts.timerAPI, global);
+    this.toSeconds = defaults(opts.toSeconds, function (value) {
       return +value;
-    };
+    });
     this.playbackTime = 0;
 
     this._timerId = 0;
@@ -67,10 +70,11 @@ module.exports = (function () {
 
       /**
        * Start the scheduler timeline.
+       * @param {function} callback
        * @return {WebAudioScheduler} self
        * @public
        */
-      value: function () {
+      value: function start(callback) {
         var _this = this;
         if (this._timerId === 0) {
           this._timerId = this.timerAPI.setInterval(function () {
@@ -79,6 +83,9 @@ module.exports = (function () {
 
             _this._process(t0, t1);
           }, this.interval * 1000);
+        }
+        if (callback) {
+          this.insert(0, callback);
         }
         return this;
       },
@@ -93,7 +100,7 @@ module.exports = (function () {
        * @return {WebAudioScheduler} self
        * @public
        */
-      value: function () {
+      value: function stop() {
         if (this._timerId !== 0) {
           this.timerAPI.clearInterval(this._timerId);
           this._timerId = 0;
@@ -113,7 +120,7 @@ module.exports = (function () {
        * @return {number} schedId
        * @public
        */
-      value: function (time, callback) {
+      value: function insert(time, callback) {
         time = this.toSeconds(time, this);
 
         this._schedId += 1;
@@ -128,8 +135,7 @@ module.exports = (function () {
         if (events.length === 0 || events[events.length - 1].time <= time) {
           events.push(event);
         } else {
-          for (var i = 0,
-              imax = events.length; i < imax; i++) {
+          for (var i = 0, imax = events.length; i < imax; i++) {
             if (time < events[i].time) {
               events.splice(i, 0, event);
               break;
@@ -143,6 +149,21 @@ module.exports = (function () {
       enumerable: true,
       configurable: true
     },
+    nextTick: {
+
+      /**
+       * Insert the callback function at next tick.
+       * @param {function(object)} callback
+       * @return {number} schedId
+       * @public
+       */
+      value: function nextTick(callback) {
+        return this.insert(this.playbackTime + this.aheadTime, callback);
+      },
+      writable: true,
+      enumerable: true,
+      configurable: true
+    },
     remove: {
 
       /**
@@ -151,14 +172,13 @@ module.exports = (function () {
        * @return {number} schedId
        * @public
        */
-      value: function (schedId) {
+      value: function remove(schedId) {
         var events = this._events;
 
         if (typeof schedId === "undefined") {
           events.splice(0);
         } else {
-          for (var i = 0,
-              imax = events.length; i < imax; i++) {
+          for (var i = 0, imax = events.length; i < imax; i++) {
             if (schedId === events[i].id) {
               events.splice(i, 1);
               break;
@@ -177,12 +197,12 @@ module.exports = (function () {
       /**
        * @private
        */
-      value: function (t0, t1) {
+      value: function Process(t0, t1) {
         var events = this._events;
 
         this.playbackTime = t0;
 
-        while (events.length && events[0].time <= t1) {
+        while (events.length && events[0].time < t1) {
           var event = events.shift();
 
           this.playbackTime = Math.max(this.context.currentTime, event.time) + this.offsetTime;
