@@ -90,6 +90,18 @@ describe("WebAudioScheduler", ()=> {
       ]);
     });
   });
+  describe("#nextTick", ()=> {
+    it("(callback: function): number", ()=> {
+      var sched = new WebAudioScheduler();
+      var eN = { callback: ()=> {} };
+
+      var idN = sched.nextTick(eN.callback);
+
+      assert.deepEqual(sched.events, [
+        { id: idN, time: sched.playbackTime + sched.aheadTime, callback: eN.callback },
+      ]);
+    });
+  });
   describe("#remove", ()=> {
     it("(schedId: number): number", ()=> {
       var sched = new WebAudioScheduler();

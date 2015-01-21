@@ -109,6 +109,16 @@ module.exports = class WebAudioScheduler {
   }
 
   /**
+   * Insert the callback function into the next tick of the scheduler timeline.
+   * @param {function(object)} callback
+   * @return {number} schedId
+   * @public
+   */
+  nextTick(callback) {
+    return this.insert(this.playbackTime + this.aheadTime, callback);
+  }
+
+  /**
    * Remove the callback function from the scheduler timeline.
    * @param {number} schedId
    * @return {number} schedId
