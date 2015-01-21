@@ -12,8 +12,8 @@ If you want to learn about this module, should read this article.
 
 downloads:
 
-- [web-audio-scheduler.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler.js/master/build/web-audio-scheduler.js)
-- [web-audio-scheduler.min.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler.js/master/build/web-audio-scheduler.min.js)
+- [web-audio-scheduler.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.js)
+- [web-audio-scheduler.min.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.min.js)
 
 bower:
 
@@ -68,7 +68,7 @@ scheduler.insert(0, metronome);
   - `timerAPI: object` _default: `window || global`._
   - `toSeconds: function` _default: `(value)=> +value`_
 
-  [see the details](#customizes)
+  [see the details](#customize)
 
 #### Instance properties
 - `context: AudioContext`
