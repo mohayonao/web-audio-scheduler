@@ -31,12 +31,12 @@ var scheduler = new WebAudioScheduler({
   context: audioContext
 });
 
-function mertonome(e) {
+function metronome(e) {
   ticktack(e.playbackTime + 0.000, 880, 1.00);
   ticktack(e.playbackTime + 0.500, 220, 0.05);
   ticktack(e.playbackTime + 1.000, 220, 0.05);
   ticktack(e.playbackTime + 1.500, 220, 0.05);
-  scheduler.insert(e.playbackTime + 2, mertonome);
+  scheduler.insert(e.playbackTime + 2, metronome);
 }
 
 function ticktack(t0, freq, dur) {
@@ -61,7 +61,7 @@ function ticktack(t0, freq, dur) {
   });
 }
 
-scheduler.start(mertonome);
+scheduler.start(metronome);
 ```
 
 ## API
