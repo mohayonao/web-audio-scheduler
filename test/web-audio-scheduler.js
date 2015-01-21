@@ -62,6 +62,15 @@ describe("WebAudioScheduler", ()=> {
 
       assert(sched.start() === sched);
     });
+    it("(callback: function): self", ()=> {
+      var callback = ()=> {};
+      var sched = new WebAudioScheduler({
+        timerAPI: tickable
+      });
+
+      assert(sched.start(callback) === sched);
+      assert(sched.events[0].callback === callback);
+    });
   });
   describe("#stop", ()=> {
     it("(): self", ()=> {

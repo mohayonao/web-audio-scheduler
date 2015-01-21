@@ -47,10 +47,11 @@ module.exports = class WebAudioScheduler {
 
   /**
    * Start the scheduler timeline.
+   * @param {function} callback
    * @return {WebAudioScheduler} self
    * @public
    */
-  start() {
+  start(callback) {
     if (this._timerId === 0) {
       this._timerId = this.timerAPI.setInterval(()=> {
         var t0 = this.context.currentTime;
@@ -58,6 +59,9 @@ module.exports = class WebAudioScheduler {
 
         this._process(t0, t1);
       }, this.interval * 1000);
+    }
+    if (callback) {
+      this.insert(0, callback);
     }
     return this;
   }
