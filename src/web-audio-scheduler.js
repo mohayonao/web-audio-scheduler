@@ -2,6 +2,7 @@
 
 /* istanbul ignore next */
 var AudioContext = global.AudioContext || global.webkitAudioContext;
+var defaults = (value, defaultValue)=> (value !== undefined) ? value : defaultValue;
 
 /**
  * @class WebAudioScheduler
@@ -14,11 +15,11 @@ module.exports = class WebAudioScheduler {
    */
   constructor(opts={}) {
     this.context = opts.context || new AudioContext();
-    this.interval = opts.interval || 0.025;
-    this.aheadTime = opts.aheadTime || 0.1;
-    this.offsetTime = opts.offsetTime || 0.005;
-    this.timerAPI = opts.timerAPI || global;
-    this.toSeconds = opts.toSeconds || (value)=> +value;
+    this.interval = +defaults(opts.interval, 0.025);
+    this.aheadTime = +defaults(opts.aheadTime, 0.1);
+    this.offsetTime = +defaults(opts.offsetTime, 0.005);
+    this.timerAPI = defaults(opts.timerAPI, global);
+    this.toSeconds = defaults(opts.toSeconds, (value)=> +value);
     this.playbackTime = 0;
 
     this._timerId = 0;

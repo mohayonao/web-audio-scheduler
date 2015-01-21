@@ -10,23 +10,27 @@ describe("WebAudioScheduler", ()=> {
     it("()", ()=> {
       var sched = new WebAudioScheduler();
 
-      assert(sched instanceof WebAudioScheduler);
+      assert(sched.context instanceof AudioContext);
+      assert(typeof sched.interval === "number");
+      assert(typeof sched.aheadTime === "number");
+      assert(typeof sched.offsetTime === "number");
+      assert(sched.timerAPI === global);
     });
     it("(opts: object)", ()=> {
       var audioContext = new AudioContext();
       var sched = new WebAudioScheduler({
         context: audioContext,
-        interval: 1,
-        aheadTime: 2,
-        offsetTime: 3,
+        interval: 0.1,
+        aheadTime: 0.25,
+        offsetTime: 0,
         timerAPI: tickable,
       });
 
       assert(sched.context === audioContext);
-      assert(sched.interval === 1);
-      assert(sched.aheadTime === 2);
-      assert(sched.offsetTime === 3);
-      assert(sched.timerAPI  === tickable);
+      assert(sched.interval === 0.1);
+      assert(sched.aheadTime === 0.25);
+      assert(sched.offsetTime === 0);
+      assert(sched.timerAPI === tickable);
     });
   });
   describe("#currentTime", ()=> {
