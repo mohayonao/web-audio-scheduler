@@ -113,7 +113,7 @@ module.exports = class WebAudioScheduler {
   }
 
   /**
-   * Insert the callback function into the next tick of the scheduler timeline.
+   * Insert the callback function at next tick.
    * @param {function(object)} callback
    * @return {number} schedId
    * @public
