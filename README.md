@@ -4,9 +4,9 @@
 
 > Event Scheduler for Web Audio API
 
-If you want to learn about this module, should read this article.
+This module is developed based on the idea of this article.
 
-  - http://www.html5rocks.com/en/tutorials/audio/scheduling/
+ - http://www.html5rocks.com/en/tutorials/audio/scheduling/
 
 ## Installation
 
@@ -23,39 +23,45 @@ bower install web-audio-scheduler
 
 ## Examples
 
+[metronome](http://mohayonao.github.io/web-audio-scheduler/)
+
 ```javascript
-var scheduler = new WebAudioScheduler();
+var audioContext = new AudioContext();
+var scheduler = new WebAudioScheduler({
+  context: audioContext
+});
 
-var metronome = function(e) {
-  ticktack(e.playbackTime + 0.000, 880);
-  ticktack(e.playbackTime + 0.500, 440);
-  ticktack(e.playbackTime + 1.000, 440);
-  ticktack(e.playbackTime + 1.500, 440);
-  scheduler.insert(e.playbackTime + 2, metronome);
-};
+function mertonome(e) {
+  ticktack(e.playbackTime + 0.000, 880, 1.00);
+  ticktack(e.playbackTime + 0.500, 220, 0.05);
+  ticktack(e.playbackTime + 1.000, 220, 0.05);
+  ticktack(e.playbackTime + 1.500, 220, 0.05);
+  scheduler.insert(e.playbackTime + 2, mertonome);
+}
 
-var ticktack = function(t0, freq) {
+function ticktack(t0, freq, dur) {
   var osc = audioContext.createOscillator();
   var amp = audioContext.createGain();
 
   osc.frequency.value = freq;
-  osc.start(t0);
+  amp.gain.setValueAtTime(0.5, t0);
+  amp.gain.exponentialRampToValueAtTime(1e-6, t0 + dur);
 
-  amp.gain.setValueAtTime(0.25, t0);
-  amp.gain.exponentialRampToValueAtTime(1e-6, t0 + 0.75);
+  osc.start(t0);
 
   osc.connect(amp);
   amp.connect(audioContext.destination);
 
-  scheduler.insert(t0 + 0.75, function(e) {
+  scheduler.insert(t0 + dur, function(e) {
     osc.stop(e.playbackTime);
-    osc.disconnect();
-    amp.disconnect();
+    scheduler.nextTick(function() {
+      osc.disconnect();
+      amp.disconnect();
+    });
   });
-};
+}
 
-scheduler.start();
-scheduler.insert(0, metronome);
+scheduler.start(mertonome);
 ```
 
 ## API
@@ -85,12 +91,14 @@ scheduler.insert(0, metronome);
   - Sorted list of scheduled items
 
 #### Instance methods
-- `start(): self`
-  - Start the scheduler timeline.
+- `start(callback: function): self`
+  - Start the schedule timeline, when `callback` given that is inserted in the head of the timeline.
 - `stop(): self`
-  - Stop the scheduler timeline.
-- `insert(time: number, callback:function): number`
-  - Insert the callback function into the scheduler timeline.
+  - Stop the schedule timeline.
+- `insert(time: number, callback: function): number`
+  - Insert the callback function into the schedule timeline.
+- `nextTick(callback: function): number`
+  - Insert the callback function at next tick.
 - `remove(schedId: number): number`
   - Remove the callback function from the scheduler timeline.
 
@@ -131,7 +139,7 @@ var toSeconds = function(value, scheduler) {
   }
   if (typeof value === "string") {
     if (value.charAt(0) === "+") {
-      return scheduler.context.currentTime + +value.substr(1);
+      return scheduler.currentTime + +value.substr(1);
     }
   }
   return 0;
