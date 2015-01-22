@@ -1,6 +1,6 @@
 # web-audio-scheduler
-[![Bower](https://img.shields.io/bower/v/web-audio-scheduler.svg?style=flat)](https://github.com/mohayonao/web-audio-scheduler)
 [![Build Status](http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat)](https://travis-ci.org/mohayonao/web-audio-scheduler)
+[![Bower](https://img.shields.io/bower/v/web-audio-scheduler.svg?style=flat)](https://github.com/mohayonao/web-audio-scheduler)
 [![6to5](http://img.shields.io/badge/module-6to5-yellow.svg?style=flat)](https://6to5.org/)
 
 > Event Timeline for Web Audio API
@@ -11,16 +11,22 @@ This module is developed based on the idea of this article.
 
 ## Installation
 
-downloads:
-
-- [web-audio-scheduler.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.js)
-- [web-audio-scheduler.min.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.min.js)
-
 bower:
 
 ```
 bower install web-audio-scheduler
 ```
+
+npm:
+
+```
+npm install web-audio-scheduler
+```
+
+downloads:
+
+- [web-audio-scheduler.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.js)
+- [web-audio-scheduler.min.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.min.js)
 
 ## Examples
 
@@ -101,9 +107,11 @@ function stop() {
 
 #### Instance methods
 - `start([callback: function]): self`
-  - Start the timeline. The `callback` is inserted in the head of the event list if given.
+  - Start the timeline.
+  - The `callback` is inserted in the head of the event list if given.
 - `stop([reset: boolean]): self`
-  - Stop the timeline. The event list is cleared if `reset` is truthy.
+  - Stop the timeline.
+  - The event list is cleared if `reset` is truthy.
 - `insert(time: number, callback: function, [args: any[]]): number`
   - Insert the `callback` into the event list.
   - The return value is `schedId`. It is used to `.remove()` the callback.
@@ -117,7 +125,8 @@ function stop() {
 #### Callback
 A callback function receives a schedule event and given arguments at `.insert()`.
 
-A schedule event has
+A schedule event has two parameters.
+
   - `target: WebAudioScheduler`
   - `playbackTime: number`
 
@@ -142,29 +151,47 @@ time(ms) 0----25---50---75---100--125--150--175--200---->
          *====|====|====|====|    |    |    |    |
          |    *====|====|====|====|    |    |    |
          |    |    *====|====|====|====|    |    |
-         |    |    |    *====|====|====|====|    |
-         |    |    |    |    *====|====|====|====|
+         |    |    |    | *==|====|====|====|==  |
+         |    |    |    |    | *==|====|====|====|==
          :    :    :    :    :    :    :    :    :
-         |<-->|    :    :    |<----------------->|
+         |<-->|    :    :      |<------------------>|
          interval (25ms)       aheadTime (100ms)
          * offset (5ms)      = range of execution to events
 ```
 
+The below example is the same configuration as defaults.
+
+```javascript
+var sched = new WebAudioScheduler({
+  interval: 0.025,
+  aheadTime: 0.1,
+  offsetTime: 0.005
+});
+```
+
 ### timerAPI
 
-TimerAPI should have `setInterval` and `clearInterval` functions.
+TimerAPI is used instead of the native timer API. TimerAPI should have two functions, `setInterval` and `clearInterval`.
 
 - [nulltask/stable-timer](https://github.com/nulltask/stable-timer)
   - A timer that is stable in any situation. e.g. tabs in background, the invisible state page.
 - [mohayonao/tickable-timer](https://github.com/mohayonao/tickable-timer)
   - Manual ticking `setTimeout` / `setInterval` (for test CI)
 
-### toSeconds
-
-ToSeconds should be a function. This function receives `time: any` and instance of scheduler when calling `insert()`, and returns `time: number`. e.g. the below example supports relative time syntax.
+The below example uses stable-timer instead of the native timer API.
 
 ```javascript
-var toSeconds = function(value, scheduler) {
+var shced = new WebAudioScheduler({
+  timerAPI: StableTimer
+});
+```
+
+### toSeconds
+
+ToSeconds should be a function. This function receives `value: any` and an instance of scheduler when calling `insert()`, and should return `time: number`. e.g. the below example supports relative time syntax.
+
+```javascript
+function toSeconds(value, scheduler) {
   if (typeof value === "number") {
     return value;
   }
