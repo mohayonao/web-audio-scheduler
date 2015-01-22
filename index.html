@@ -19,7 +19,7 @@
     <div class="container">
       <div class="page-header">
         <h1>web-audio-scheduler</h1>
-        <div>Event Scheduler for Web Audio API | <a href="https://github.com/mohayonao/web-audio-scheduler" target="github">GitHub</a></div>
+        <div>Event Timeline for Web Audio API | <a href="https://github.com/mohayonao/web-audio-scheduler" target="github">GitHub</a></div>
       </div>
       <div id="app">
         <button id="button" class="btn btn-default">Start</button>
@@ -40,27 +40,29 @@
       });
 
       function metronome(e) {
-        ticktack(e.playbackTime + 0.000, 880, 1.00);
-        ticktack(e.playbackTime + 0.500, 220, 0.05);
-        ticktack(e.playbackTime + 1.000, 220, 0.05);
-        ticktack(e.playbackTime + 1.500, 220, 0.05);
-        scheduler.insert(e.playbackTime + 2, metronome);
+        scheduler.insert(e.playbackTime + 0.000, ticktack, [ 880, 1.00 ]);
+        scheduler.insert(e.playbackTime + 0.500, ticktack, [ 440, 0.05 ]);
+        scheduler.insert(e.playbackTime + 1.000, ticktack, [ 440, 0.05 ]);
+        scheduler.insert(e.playbackTime + 1.500, ticktack, [ 440, 0.05 ]);
+        scheduler.insert(e.playbackTime + 2.000, metronome);
       }
 
-      function ticktack(t0, freq, dur) {
+      function ticktack(e, freq, dur) {
+        var t0 = e.playbackTime;
+        var t1 = t0 + dur;
         var osc = audioContext.createOscillator();
         var amp = audioContext.createGain();
 
         osc.frequency.value = freq;
         amp.gain.setValueAtTime(0.5, t0);
-        amp.gain.exponentialRampToValueAtTime(1e-6, t0 + dur);
+        amp.gain.exponentialRampToValueAtTime(1e-6, t1);
 
         osc.start(t0);
 
         osc.connect(amp);
         amp.connect(audioContext.destination);
 
-        scheduler.insert(t0 + dur, function(e) {
+        scheduler.insert(t1, function(e) {
           osc.stop(e.playbackTime);
           scheduler.nextTick(function() {
             osc.disconnect();
@@ -74,7 +76,7 @@
       }
 
       function stop() {
-        scheduler.stop();
+        scheduler.stop(true);
       }
     </script>
     <script>
