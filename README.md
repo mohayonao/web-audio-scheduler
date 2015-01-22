@@ -1,5 +1,6 @@
 # web-audio-scheduler
 [![Bower](https://img.shields.io/bower/v/web-audio-scheduler.svg?style=flat)](https://github.com/mohayonao/web-audio-scheduler)
+[![Build Status](http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat)](https://travis-ci.org/mohayonao/web-audio-scheduler)
 [![6to5](http://img.shields.io/badge/module-6to5-yellow.svg?style=flat)](https://6to5.org/)
 
 > Event Scheduler for Web Audio API
