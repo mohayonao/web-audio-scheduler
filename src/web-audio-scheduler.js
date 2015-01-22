@@ -68,13 +68,17 @@ module.exports = class WebAudioScheduler {
 
   /**
    * Stop the scheduler timeline.
+   * @param {boolean} reset
    * @return {WebAudioScheduler} self
    * @public
    */
-  stop() {
+  stop(reset) {
     if (this._timerId !== 0) {
       this.timerAPI.clearInterval(this._timerId);
       this._timerId = 0;
+    }
+    if (reset) {
+      this._events.splice(0);
     }
     return this;
   }

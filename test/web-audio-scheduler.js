@@ -78,7 +78,20 @@ describe("WebAudioScheduler", ()=> {
         timerAPI: tickable
       });
 
+      sched.insert(1, ()=> {});
+
       assert(sched.stop() === sched);
+      assert(sched.events.length === 1);
+    });
+    it("(reset: boolean)", ()=> {
+      var sched = new WebAudioScheduler({
+        timerAPI: tickable
+      });
+
+      sched.insert(1, ()=> {});
+
+      assert(sched.stop(true) === sched);
+      assert(sched.events.length === 0);
     });
   });
   describe("#insert", ()=> {
