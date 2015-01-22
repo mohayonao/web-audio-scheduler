@@ -1,8 +1,9 @@
 # web-audio-scheduler
 [![Bower](https://img.shields.io/bower/v/web-audio-scheduler.svg?style=flat)](https://github.com/mohayonao/web-audio-scheduler)
+[![Build Status](http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat)](https://travis-ci.org/mohayonao/web-audio-scheduler)
 [![6to5](http://img.shields.io/badge/module-6to5-yellow.svg?style=flat)](https://6to5.org/)
 
-> Event Scheduler for Web Audio API
+> Event Timeline for Web Audio API
 
 This module is developed based on the idea of this article.
 
@@ -32,27 +33,29 @@ var scheduler = new WebAudioScheduler({
 });
 
 function metronome(e) {
-  ticktack(e.playbackTime + 0.000, 880, 1.00);
-  ticktack(e.playbackTime + 0.500, 220, 0.05);
-  ticktack(e.playbackTime + 1.000, 220, 0.05);
-  ticktack(e.playbackTime + 1.500, 220, 0.05);
-  scheduler.insert(e.playbackTime + 2, metronome);
+  scheduler.insert(e.playbackTime + 0.000, ticktack, [ 880, 1.00 ]);
+  scheduler.insert(e.playbackTime + 0.500, ticktack, [ 440, 0.05 ]);
+  scheduler.insert(e.playbackTime + 1.000, ticktack, [ 440, 0.05 ]);
+  scheduler.insert(e.playbackTime + 1.500, ticktack, [ 440, 0.05 ]);
+  scheduler.insert(e.playbackTime + 2.000, metronome);
 }
 
-function ticktack(t0, freq, dur) {
+function ticktack(e, freq, dur) {
+  var t0 = e.playbackTime;
+  var t1 = t0 + dur;
   var osc = audioContext.createOscillator();
   var amp = audioContext.createGain();
 
   osc.frequency.value = freq;
   amp.gain.setValueAtTime(0.5, t0);
-  amp.gain.exponentialRampToValueAtTime(1e-6, t0 + dur);
+  amp.gain.exponentialRampToValueAtTime(1e-6, t1);
 
   osc.start(t0);
 
   osc.connect(amp);
   amp.connect(audioContext.destination);
 
-  scheduler.insert(t0 + dur, function(e) {
+  scheduler.insert(t1, function(e) {
     osc.stop(e.playbackTime);
     scheduler.nextTick(function() {
       osc.disconnect();
@@ -61,17 +64,23 @@ function ticktack(t0, freq, dur) {
   });
 }
 
-scheduler.start(metronome);
+function start() {
+  scheduler.start(metronome);
+}
+
+function stop() {
+  scheduler.stop(true);
+}
 ```
 
 ## API
 ### WebAudioScheduler
 - `WebAudioScheduler(opts={})`
   - `context: AudioContext`
-  - `interval: number` _default: **0.025**(25ms)._
-  - `aheadTime: number` _default: **0.1**(100ms)._
-  - `offsetTime: number` _default: **0.005**(5ms)._
-  - `timerAPI: object` _default: `window || global`._
+  - `interval: number` _default: **0.025** (25ms)_
+  - `aheadTime: number` _default: **0.1** (100ms)_
+  - `offsetTime: number` _default: **0.005** (5ms)_
+  - `timerAPI: object` _default: `window || global`_
   - `toSeconds: function` _default: `(value)=> +value`_
 
   [see the details](#customize)
@@ -91,16 +100,38 @@ scheduler.start(metronome);
   - Sorted list of scheduled items
 
 #### Instance methods
-- `start(callback: function): self`
-  - Start the schedule timeline, when `callback` given that is inserted in the head of the timeline.
-- `stop(): self`
-  - Stop the schedule timeline.
-- `insert(time: number, callback: function): number`
-  - Insert the callback function into the schedule timeline.
-- `nextTick(callback: function): number`
-  - Insert the callback function at next tick.
-- `remove(schedId: number): number`
-  - Remove the callback function from the scheduler timeline.
+- `start([callback: function]): self`
+  - Start the timeline. The `callback` is inserted in the head of the event list if given.
+- `stop([reset: boolean]): self`
+  - Stop the timeline. The event list is cleared if `reset` is truthy.
+- `insert(time: number, callback: function, [args: any[]]): number`
+  - Insert the `callback` into the event list.
+  - The return value is `schedId`. It is used to `.remove()` the callback.
+- `nextTick(callback: function, [args: any[]]): number`
+  - Same as `.insert()`, but this callback is called at next tick.
+  - This method is used to disconnect an audio node at the proper timing.
+- `remove([schedId: number]): number`
+  - Remove a callback function from the event list.
+  - Remove all callback functions from the event list if `schedId` is omitted.
+
+#### Callback
+A callback function receives a schedule event and given arguments at `.insert()`.
+
+A schedule event has
+  - `target: WebAudioScheduler`
+  - `playbackTime: number`
+
+```javascript
+scheduler.insert(0, callback, [ 1, 2 ]);
+
+function callback(e, arg1, arg2) {
+  assert(this === scheduler);
+  assert(e.target === scheduler);
+  assert(e.playbackTime === 0 + scheduler.offsetTime);
+  assert(arg1 === 1);
+  assert(arg2 === 2);
+}
+```
 
 ## Customize
 

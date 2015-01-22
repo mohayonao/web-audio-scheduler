@@ -74,7 +74,7 @@ module.exports = (function () {
        * @return {WebAudioScheduler} self
        * @public
        */
-      value: function start(callback) {
+      value: function (callback) {
         var _this = this;
         if (this._timerId === 0) {
           this._timerId = this.timerAPI.setInterval(function () {
@@ -97,13 +97,17 @@ module.exports = (function () {
 
       /**
        * Stop the scheduler timeline.
+       * @param {boolean} reset
        * @return {WebAudioScheduler} self
        * @public
        */
-      value: function stop() {
+      value: function (reset) {
         if (this._timerId !== 0) {
           this.timerAPI.clearInterval(this._timerId);
           this._timerId = 0;
+        }
+        if (reset) {
+          this._events.splice(0);
         }
         return this;
       },
@@ -117,10 +121,11 @@ module.exports = (function () {
        * Insert the callback function into the scheduler timeline.
        * @param {number} time
        * @param {function(object)} callback
+       * @param {*[]} args
        * @return {number} schedId
        * @public
        */
-      value: function insert(time, callback) {
+      value: function (time, callback, args) {
         time = this.toSeconds(time, this);
 
         this._schedId += 1;
@@ -128,14 +133,16 @@ module.exports = (function () {
         var event = {
           id: this._schedId,
           time: time,
-          callback: callback
+          callback: callback,
+          args: args
         };
         var events = this._events;
 
         if (events.length === 0 || events[events.length - 1].time <= time) {
           events.push(event);
         } else {
-          for (var i = 0, imax = events.length; i < imax; i++) {
+          for (var i = 0,
+              imax = events.length; i < imax; i++) {
             if (time < events[i].time) {
               events.splice(i, 0, event);
               break;
@@ -154,11 +161,12 @@ module.exports = (function () {
       /**
        * Insert the callback function at next tick.
        * @param {function(object)} callback
+       * @param {*[]} args
        * @return {number} schedId
        * @public
        */
-      value: function nextTick(callback) {
-        return this.insert(this.playbackTime + this.aheadTime, callback);
+      value: function (callback, args) {
+        return this.insert(this.playbackTime + this.aheadTime, callback, args);
       },
       writable: true,
       enumerable: true,
@@ -172,13 +180,14 @@ module.exports = (function () {
        * @return {number} schedId
        * @public
        */
-      value: function remove(schedId) {
+      value: function (schedId) {
         var events = this._events;
 
         if (typeof schedId === "undefined") {
           events.splice(0);
         } else {
-          for (var i = 0, imax = events.length; i < imax; i++) {
+          for (var i = 0,
+              imax = events.length; i < imax; i++) {
             if (schedId === events[i].id) {
               events.splice(i, 1);
               break;
@@ -197,7 +206,7 @@ module.exports = (function () {
       /**
        * @private
        */
-      value: function Process(t0, t1) {
+      value: function (t0, t1) {
         var events = this._events;
 
         this.playbackTime = t0;
@@ -207,10 +216,10 @@ module.exports = (function () {
 
           this.playbackTime = Math.max(this.context.currentTime, event.time) + this.offsetTime;
 
-          event.callback({
+          event.callback.apply(this, [{
             target: this,
             playbackTime: this.playbackTime
-          });
+          }].concat(event.args));
         }
 
         this.playbackTime = t0;

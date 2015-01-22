@@ -68,13 +68,17 @@ module.exports = class WebAudioScheduler {
 
   /**
    * Stop the scheduler timeline.
+   * @param {boolean} reset
    * @return {WebAudioScheduler} self
    * @public
    */
-  stop() {
+  stop(reset) {
     if (this._timerId !== 0) {
       this.timerAPI.clearInterval(this._timerId);
       this._timerId = 0;
+    }
+    if (reset) {
+      this._events.splice(0);
     }
     return this;
   }
@@ -83,10 +87,11 @@ module.exports = class WebAudioScheduler {
    * Insert the callback function into the scheduler timeline.
    * @param {number} time
    * @param {function(object)} callback
+   * @param {*[]} args
    * @return {number} schedId
    * @public
    */
-  insert(time, callback) {
+  insert(time, callback, args) {
     time = this.toSeconds(time, this);
 
     this._schedId += 1;
@@ -94,7 +99,8 @@ module.exports = class WebAudioScheduler {
     var event = {
       id: this._schedId,
       time: time,
-      callback: callback
+      callback: callback,
+      args: args
     };
     var events = this._events;
 
@@ -115,11 +121,12 @@ module.exports = class WebAudioScheduler {
   /**
    * Insert the callback function at next tick.
    * @param {function(object)} callback
+   * @param {*[]} args
    * @return {number} schedId
    * @public
    */
-  nextTick(callback) {
-    return this.insert(this.playbackTime + this.aheadTime, callback);
+  nextTick(callback, args) {
+    return this.insert(this.playbackTime + this.aheadTime, callback, args);
   }
 
   /**
@@ -158,10 +165,10 @@ module.exports = class WebAudioScheduler {
 
       this.playbackTime = Math.max(this.context.currentTime, event.time) + this.offsetTime;
 
-      event.callback({
+      event.callback.apply(this, [ {
         target: this,
         playbackTime: this.playbackTime
-      });
+      } ].concat(event.args));
     }
 
     this.playbackTime = t0;
