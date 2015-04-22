@@ -1,7 +1,7 @@
 {
   "name": "web-audio-scheduler",
   "description": "Event Timeline for Web Audio API",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "mohayonao <mohayonao@gmail.com>",
   "bugs": {
     "url": "https://github.com/mohayonao/web-audio-scheduler/issues"
