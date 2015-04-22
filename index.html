@@ -19,8 +19,14 @@
     <div class="container">
       <div class="page-header">
         <h1>web-audio-scheduler</h1>
-        <div>Event Timeline for Web Audio API | <a href="https://github.com/mohayonao/web-audio-scheduler" target="github">GitHub</a></div>
+        <div>
+          <a href="https://travis-ci.org/mohayonao/web-audio-scheduler"><img src="http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat-square"/></a>
+          <a href="https://www.npmjs.org/package/web-audio-scheduler"><img src="http://img.shields.io/npm/v/web-audio-scheduler.svg?style=flat-square"/></a>
+          <a href="http://bower.io/search/?q=web-audio-scheduler"><img src="http://img.shields.io/bower/v/web-audio-scheduler.svg?style=flat-square"/></a>
+          <a href="http://mohayonao.mit-license.org/"><img src="http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"/></a>
+        </div>
       </div>
+      <div>Event Timeline for Web Audio API | <a href="https://github.com/mohayonao/web-audio-scheduler" target="github">GitHub</a></div>
       <div id="app">
         <button id="button" class="btn btn-default">Start</button>
       </div>
@@ -33,6 +39,46 @@
         </div>
       </div>
     </div>
+    <script>
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      var $ = document.getElementById.bind(document);
+
+      function chore() {
+        if (chore.done) {
+          return;
+        }
+        chore.done = true;
+
+        var bufSrc = audioContext.createBufferSource();
+
+        bufSrc.start(0);
+        bufSrc.connect(audioContext.destination, 0, 0);
+        bufSrc.disconnect(0);
+      }
+
+      window.onload = function() {
+        "use strict";
+
+        var isPlaying = false;
+
+        $("button").onclick = function(e) {
+          isPlaying = !isPlaying;
+
+          if (isPlaying) {
+            chore();
+            start();
+            e.target.textContent = "Stop";
+          } else {
+            stop();
+            e.target.textContent = "Start";
+          }
+        };
+
+        // code
+        $("code").textContent = $("example").textContent;
+        prettyPrint();
+      };
+    </script>
     <script id="example">
       var audioContext = new AudioContext();
       var scheduler = new WebAudioScheduler({
@@ -78,32 +124,6 @@
       function stop() {
         scheduler.stop(true);
       }
-    </script>
-    <script>
-      var AudioContext = window.AudioContext || window.webkitAudioContext;
-      var $ = document.getElementById.bind(document);
-
-      window.onload = function() {
-        "use strict";
-
-        var isPlaying = false;
-
-        $("button").onclick = function(e) {
-          isPlaying = !isPlaying;
-
-          if (isPlaying) {
-            start();
-            e.target.textContent = "Stop";
-          } else {
-            stop();
-            e.target.textContent = "Start";
-          }
-        };
-
-        // code
-        $("code").textContent = $("example").textContent;
-        prettyPrint();
-      };
     </script>
   </body>
 </html>
