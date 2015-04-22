@@ -1,13 +1,15 @@
 "use strict";
 
-/* istanbul ignore next */
-var AudioContext = global.AudioContext || global.webkitAudioContext;
-var defaults = (value, defaultValue)=> (value !== undefined) ? value : defaultValue;
+let AudioContext = global.AudioContext || global.webkitAudioContext;
+
+function defaults(value, defaultValue) {
+  return value !== undefined ? value : defaultValue;
+}
 
 /**
  * @class WebAudioScheduler
  */
-module.exports = class WebAudioScheduler {
+export default class WebAudioScheduler {
   /**
    * @constructor
    * @param {object} opts
@@ -54,8 +56,8 @@ module.exports = class WebAudioScheduler {
   start(callback) {
     if (this._timerId === 0) {
       this._timerId = this.timerAPI.setInterval(()=> {
-        var t0 = this.context.currentTime;
-        var t1 = t0 + this.aheadTime;
+        let t0 = this.context.currentTime;
+        let t1 = t0 + this.aheadTime;
 
         this._process(t0, t1);
       }, this.interval * 1000);
@@ -96,13 +98,13 @@ module.exports = class WebAudioScheduler {
 
     this._schedId += 1;
 
-    var event = {
+    let event = {
       id: this._schedId,
       time: time,
       callback: callback,
       args: args
     };
-    var events = this._events;
+    let events = this._events;
 
     if (events.length === 0 || events[events.length - 1].time <= time) {
       events.push(event);
@@ -136,7 +138,7 @@ module.exports = class WebAudioScheduler {
    * @public
    */
   remove(schedId) {
-    var events = this._events;
+    let events = this._events;
 
     if (typeof schedId === "undefined") {
       events.splice(0);
@@ -156,7 +158,7 @@ module.exports = class WebAudioScheduler {
    * @private
    */
   _process(t0, t1) {
-    var events = this._events;
+    let events = this._events;
 
     this.playbackTime = t0;
 
@@ -173,4 +175,4 @@ module.exports = class WebAudioScheduler {
 
     this.playbackTime = t0;
   }
-};
+}
