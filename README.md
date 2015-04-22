@@ -1,7 +1,7 @@
 # web-audio-scheduler
 [![Build Status](http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat-square)](https://travis-ci.org/mohayonao/web-audio-scheduler)
+[![NPM Version](http://img.shields.io/npm/v/web-audio-scheduler.svg?style=flat-square)](https://www.npmjs.org/package/web-audio-scheduler)
 [![Bower](https://img.shields.io/bower/v/web-audio-scheduler.svg?style=flat-square)](https://github.com/mohayonao/web-audio-scheduler)
-[![6to5](http://img.shields.io/badge/module-6to5-brightgreen.svg?style=flat-square)](https://6to5.org/)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://mohayonao.mit-license.org/)
 
 > Event Timeline for Web Audio API
@@ -12,16 +12,16 @@ This module is developed based on the idea of this article.
 
 ## Installation
 
-bower:
-
-```
-bower install web-audio-scheduler
-```
-
 npm:
 
 ```
 npm install web-audio-scheduler
+```
+
+bower:
+
+```
+bower install web-audio-scheduler
 ```
 
 downloads:
@@ -174,7 +174,7 @@ var sched = new WebAudioScheduler({
 
 TimerAPI is used instead of the native timer API. TimerAPI should have two functions, `setInterval` and `clearInterval`.
 
-- [nulltask/stable-timer](https://github.com/nulltask/stable-timer)
+- [mohayonao/worker-timer](https://github.com/mohayonao/worker-timer)
   - A timer that is stable in any situation. e.g. tabs in background, the invisible state page.
 - [mohayonao/tickable-timer](https://github.com/mohayonao/tickable-timer)
   - Manual ticking `setTimeout` / `setInterval` (for test CI)
