@@ -1,7 +1,7 @@
 {
   "name": "web-audio-scheduler",
   "description": "Event Timeline for Web Audio API",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "authors": [
     "mohayonao <mohayonao@gmail.com>"
   ],
@@ -20,5 +20,9 @@
     "event"
   ],
   "license": "MIT",
-  "main": "build/web-audio-scheduler.js"
+  "main": "build/web-audio-scheduler.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mohayonao/web-audio-schedule.git"
+  }
 }
