@@ -1,3 +1,1 @@
-import WebAudioScheduler from "./WebAudioScheduler";
-
-export default WebAudioScheduler;
+module.exports = require("./WebAudioScheduler");

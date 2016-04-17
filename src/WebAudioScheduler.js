@@ -1,9 +1,13 @@
-import { EventEmitter } from "events";
-import defaults from "./utils/defaults";
-import defaultContext from "./defaultContext";
+"use strict";
 
-export default class WebAudioScheduler extends EventEmitter {
-  constructor(opts = {}) {
+const events = require("events");
+const defaults = require("./utils/defaults");
+const defaultContext = require("./defaultContext");
+
+class WebAudioScheduler extends events.EventEmitter {
+  constructor(opts) {
+    opts = opts || /* istanbul ignore next */ {};
+
     super();
 
     this.context = defaults(opts.context, defaultContext);
@@ -131,3 +135,5 @@ export default class WebAudioScheduler extends EventEmitter {
     this.emit("processed", { playbackTime: this.playbackTime });
   }
 }
+
+module.exports = WebAudioScheduler;

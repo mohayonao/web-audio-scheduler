@@ -1,5 +1,7 @@
-import assert from "power-assert";
-import defaults from "../../src/utils/defaults";
+"use strict";
+
+const assert = require("power-assert");
+const defaults = require("../../src/utils/defaults");
 
 describe("defaults(value: any, defaultValue: any): any", () => {
   it("works", () => {
