@@ -48,8 +48,9 @@
 
         var bufSrc = audioContext.createBufferSource();
 
+        bufSrc.buffer = audioContext.createBuffer(1, 4, audioContext.sampleRate);
         bufSrc.start(0);
-        bufSrc.stop(0);
+        bufSrc.stop(bufSrc.buffer.duration);
         bufSrc.connect(audioContext.destination);
         bufSrc.disconnect();
       }

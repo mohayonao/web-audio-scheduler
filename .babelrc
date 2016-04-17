@@ -1,0 +1,20 @@
+{
+  "env": {
+    "production": {
+      "only": [ "src" ],
+      "presets": [
+        "es2015"
+      ],
+    },
+    "development": {
+      "only": [ "src", "test" ],
+      "presets": [
+        "babel-preset-power-assert"
+      ]
+    },
+    "coverage": {
+      "only": [ "src" ],
+      "sourceMaps": "inline"
+    }
+  }
+}
