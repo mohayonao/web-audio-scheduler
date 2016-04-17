@@ -1,9 +1,13 @@
-import { EventEmitter } from "events";
-import defaults from "./utils/defaults";
-import defaultContext from "./defaultContext";
+"use strict";
 
-export default class WebAudioScheduler extends EventEmitter {
-  constructor(opts = {}) {
+const events = require("events");
+const defaults = require("./utils/defaults");
+const defaultContext = require("./defaultContext");
+
+class WebAudioScheduler extends events.EventEmitter {
+  constructor(opts) {
+    opts = opts || /* istanbul ignore next */ {};
+
     super();
 
     this.context = defaults(opts.context, defaultContext);
@@ -30,18 +34,23 @@ export default class WebAudioScheduler extends EventEmitter {
   }
 
   start(callback) {
-    if (this._timerId === 0) {
-      this._timerId = this.timerAPI.setInterval(()=> {
-        let t0 = this.context.currentTime;
-        let t1 = t0 + this.aheadTime;
+    const loop = () => {
+      let t0 = this.context.currentTime;
+      let t1 = t0 + this.aheadTime;
 
-        this._process(t0, t1);
-      }, this.interval * 1000);
+      this._process(t0, t1);
+    };
+
+    if (this._timerId === 0) {
+      this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
+
+      if (callback) {
+        this.insert(this.context.currentTime, callback);
+        loop();
+      }
 
       this.emit("start");
-    }
-
-    if (callback) {
+    } else {
       this.insert(this.context.currentTime, callback);
     }
 
@@ -131,3 +140,5 @@ export default class WebAudioScheduler extends EventEmitter {
     this.emit("processed", { playbackTime: this.playbackTime });
   }
 }
+
+module.exports = WebAudioScheduler;

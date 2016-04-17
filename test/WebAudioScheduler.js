@@ -1,8 +1,10 @@
-import "web-audio-test-api";
-import assert from "power-assert";
-import sinon from "sinon";
-import tickable from "tickable-timer";
-import WebAudioScheduler from "../src/WebAudioScheduler";
+"use strict";
+
+require("web-audio-test-api");
+const assert = require("power-assert");
+const sinon = require("sinon");
+const tickable = require("tickable-timer");
+const WebAudioScheduler = require("../src/WebAudioScheduler");
 
 describe("WebAudioScheduler", () => {
   let BuiltInDate = Date;
@@ -111,16 +113,14 @@ describe("WebAudioScheduler", () => {
       sched.start(callback1);
 
       assert(tickable.timers.length === 1);
-      assert(sched.events.length === 1);
-      assert(sched.events[0].time === timestamp);
-      assert(sched.events[0].callback === callback1);
+      assert(callback1.callCount === 1);
 
       sched.start(callback2);
 
       assert(tickable.timers.length === 1);
-      assert(sched.events.length === 2);
-      assert(sched.events[1].time === timestamp);
-      assert(sched.events[1].callback === callback2);
+      assert(sched.events.length === 1);
+      assert(sched.events[0].time === timestamp);
+      assert(sched.events[0].callback === callback2);
     });
   });
   describe("#stop(reset: boolean): self", () => {
@@ -226,13 +226,13 @@ describe("WebAudioScheduler", () => {
       sched.remove(id1);
 
       assert(sched.events.length === 2);
-      assert(sched.events.every(({ id }) => id !== id1));
+      assert(sched.events.every(items => items.id !== id1));
 
       sched.remove(id2);
       sched.remove();
 
       assert(sched.events.length === 1);
-      assert(sched.events.every(({ id }) => id !== id2));
+      assert(sched.events.every(items => items.id !== id2));
 
       sched.remove(id3);
       sched.remove(id1);

@@ -1,6 +1,8 @@
-import assert from "power-assert";
-import index from "../src";
-import WebAudioScheduler from "../src/WebAudioScheduler";
+"use strict";
+
+const assert = require("power-assert");
+const index = require("../src");
+const WebAudioScheduler = require("../src/WebAudioScheduler");
 
 describe("index", () => {
   it("exports", () => {
