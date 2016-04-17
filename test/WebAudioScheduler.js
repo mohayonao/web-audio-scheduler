@@ -113,16 +113,14 @@ describe("WebAudioScheduler", () => {
       sched.start(callback1);
 
       assert(tickable.timers.length === 1);
-      assert(sched.events.length === 1);
-      assert(sched.events[0].time === timestamp);
-      assert(sched.events[0].callback === callback1);
+      assert(callback1.callCount === 1);
 
       sched.start(callback2);
 
       assert(tickable.timers.length === 1);
-      assert(sched.events.length === 2);
-      assert(sched.events[1].time === timestamp);
-      assert(sched.events[1].callback === callback2);
+      assert(sched.events.length === 1);
+      assert(sched.events[0].time === timestamp);
+      assert(sched.events[0].callback === callback2);
     });
   });
   describe("#stop(reset: boolean): self", () => {
