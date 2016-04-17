@@ -1,234 +1,4 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.WebAudioScheduler = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports = require("./lib");
-
-},{"./lib":4}],2:[function(require,module,exports){
-(function (global){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _events = require("events");
-
-var _utilsDefaults = require("./utils/defaults");
-
-var _utilsDefaults2 = _interopRequireDefault(_utilsDefaults);
-
-var _defaultContext = require("./defaultContext");
-
-var _defaultContext2 = _interopRequireDefault(_defaultContext);
-
-var WebAudioScheduler = (function (_EventEmitter) {
-  _inherits(WebAudioScheduler, _EventEmitter);
-
-  function WebAudioScheduler() {
-    var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-    _classCallCheck(this, WebAudioScheduler);
-
-    _get(Object.getPrototypeOf(WebAudioScheduler.prototype), "constructor", this).call(this);
-
-    this.context = (0, _utilsDefaults2["default"])(opts.context, _defaultContext2["default"]);
-    this.interval = (0, _utilsDefaults2["default"])(opts.interval, 0.025);
-    this.aheadTime = (0, _utilsDefaults2["default"])(opts.aheadTime, 0.1);
-    this.timerAPI = (0, _utilsDefaults2["default"])(opts.timerAPI, global);
-    this.playbackTime = this.currentTime;
-
-    this._timerId = 0;
-    this._schedId = 0;
-    this._scheds = [];
-  }
-
-  _createClass(WebAudioScheduler, [{
-    key: "start",
-    value: function start(callback) {
-      var _this = this;
-
-      if (this._timerId === 0) {
-        this._timerId = this.timerAPI.setInterval(function () {
-          var t0 = _this.context.currentTime;
-          var t1 = t0 + _this.aheadTime;
-
-          _this._process(t0, t1);
-        }, this.interval * 1000);
-
-        this.emit("start");
-      }
-
-      if (callback) {
-        this.insert(this.context.currentTime, callback);
-      }
-
-      return this;
-    }
-  }, {
-    key: "stop",
-    value: function stop(reset) {
-      if (this._timerId !== 0) {
-        this.timerAPI.clearInterval(this._timerId);
-        this._timerId = 0;
-
-        this.emit("stop");
-      }
-
-      if (reset) {
-        this._scheds.splice(0);
-      }
-
-      return this;
-    }
-  }, {
-    key: "insert",
-    value: function insert(time, callback, args) {
-      var id = ++this._schedId;
-      var event = { id: id, time: time, callback: callback, args: args };
-      var scheds = this._scheds;
-
-      if (scheds.length === 0 || scheds[scheds.length - 1].time <= time) {
-        scheds.push(event);
-      } else {
-        for (var i = 0, imax = scheds.length; i < imax; i++) {
-          if (time < scheds[i].time) {
-            scheds.splice(i, 0, event);
-            break;
-          }
-        }
-      }
-
-      return id;
-    }
-  }, {
-    key: "nextTick",
-    value: function nextTick(time, callback, args) {
-      if (typeof time === "function") {
-        args = callback;
-        callback = time;
-        time = this.playbackTime;
-      }
-
-      return this.insert(time + this.aheadTime, callback, args);
-    }
-  }, {
-    key: "remove",
-    value: function remove(schedId) {
-      var scheds = this._scheds;
-
-      if (typeof schedId === "number") {
-        for (var i = 0, imax = scheds.length; i < imax; i++) {
-          if (schedId === scheds[i].id) {
-            scheds.splice(i, 1);
-            break;
-          }
-        }
-      }
-
-      return schedId;
-    }
-  }, {
-    key: "removeAll",
-    value: function removeAll() {
-      this._scheds.splice(0);
-    }
-  }, {
-    key: "_process",
-    value: function _process(t0, t1) {
-      var scheds = this._scheds;
-
-      this.playbackTime = t0;
-      this.emit("process", { playbackTime: this.playbackTime });
-
-      while (scheds.length && scheds[0].time < t1) {
-        var _event = scheds.shift();
-        var playbackTime = _event.time;
-        var args = _event.args;
-
-        this.playbackTime = playbackTime;
-
-        _event.callback({ playbackTime: playbackTime, args: args });
-      }
-
-      this.playbackTime = t0;
-      this.emit("processed", { playbackTime: this.playbackTime });
-    }
-  }, {
-    key: "state",
-    get: function get() {
-      return this._timerId !== 0 ? "running" : "suspended";
-    }
-  }, {
-    key: "currentTime",
-    get: function get() {
-      return this.context.currentTime;
-    }
-  }, {
-    key: "events",
-    get: function get() {
-      return this._scheds.slice();
-    }
-  }]);
-
-  return WebAudioScheduler;
-})(_events.EventEmitter);
-
-exports["default"] = WebAudioScheduler;
-module.exports = exports["default"];
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./defaultContext":3,"./utils/defaults":5,"events":6}],3:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = Object.defineProperties({}, {
-  currentTime: {
-    get: function get() {
-      return Date.now() / 1000;
-    },
-    configurable: true,
-    enumerable: true
-  }
-});
-module.exports = exports["default"];
-},{}],4:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _WebAudioScheduler = require("./WebAudioScheduler");
-
-var _WebAudioScheduler2 = _interopRequireDefault(_WebAudioScheduler);
-
-exports["default"] = _WebAudioScheduler2["default"];
-module.exports = exports["default"];
-},{"./WebAudioScheduler":2}],5:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = defaults;
-
-function defaults(value, defaultValue) {
-  return value !== undefined ? value : defaultValue;
-}
-
-module.exports = exports["default"];
-},{}],6:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -312,18 +82,11 @@ EventEmitter.prototype.emit = function(type) {
         break;
       // slower
       default:
-        len = arguments.length;
-        args = new Array(len - 1);
-        for (i = 1; i < len; i++)
-          args[i - 1] = arguments[i];
+        args = Array.prototype.slice.call(arguments, 1);
         handler.apply(this, args);
     }
   } else if (isObject(handler)) {
-    len = arguments.length;
-    args = new Array(len - 1);
-    for (i = 1; i < len; i++)
-      args[i - 1] = arguments[i];
-
+    args = Array.prototype.slice.call(arguments, 1);
     listeners = handler.slice();
     len = listeners.length;
     for (i = 0; i < len; i++)
@@ -361,7 +124,6 @@ EventEmitter.prototype.addListener = function(type, listener) {
 
   // Check for listener leak
   if (isObject(this._events[type]) && !this._events[type].warned) {
-    var m;
     if (!isUndefined(this._maxListeners)) {
       m = this._maxListeners;
     } else {
@@ -483,7 +245,7 @@ EventEmitter.prototype.removeAllListeners = function(type) {
 
   if (isFunction(listeners)) {
     this.removeListener(type, listeners);
-  } else {
+  } else if (listeners) {
     // LIFO order
     while (listeners.length)
       this.removeListener(type, listeners[listeners.length - 1]);
@@ -504,15 +266,20 @@ EventEmitter.prototype.listeners = function(type) {
   return ret;
 };
 
+EventEmitter.prototype.listenerCount = function(type) {
+  if (this._events) {
+    var evlistener = this._events[type];
+
+    if (isFunction(evlistener))
+      return 1;
+    else if (evlistener)
+      return evlistener.length;
+  }
+  return 0;
+};
+
 EventEmitter.listenerCount = function(emitter, type) {
-  var ret;
-  if (!emitter._events || !emitter._events[type])
-    ret = 0;
-  else if (isFunction(emitter._events[type]))
-    ret = 1;
-  else
-    ret = emitter._events[type].length;
-  return ret;
+  return emitter.listenerCount(type);
 };
 
 function isFunction(arg) {
@@ -531,5 +298,205 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}]},{},[1])(1)
+},{}],2:[function(require,module,exports){
+(function (global){
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var events = require("events");
+var defaults = require("./utils/defaults");
+var defaultContext = require("./defaultContext");
+
+var WebAudioScheduler = function (_events$EventEmitter) {
+  _inherits(WebAudioScheduler, _events$EventEmitter);
+
+  function WebAudioScheduler(opts) {
+    _classCallCheck(this, WebAudioScheduler);
+
+    opts = opts || /* istanbul ignore next */{};
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(WebAudioScheduler).call(this));
+
+    _this.context = defaults(opts.context, defaultContext);
+    _this.interval = defaults(opts.interval, 0.025);
+    _this.aheadTime = defaults(opts.aheadTime, 0.1);
+    _this.timerAPI = defaults(opts.timerAPI, global);
+    _this.playbackTime = _this.currentTime;
+
+    _this._timerId = 0;
+    _this._schedId = 0;
+    _this._scheds = [];
+    return _this;
+  }
+
+  _createClass(WebAudioScheduler, [{
+    key: "start",
+    value: function start(callback) {
+      var _this2 = this;
+
+      var loop = function loop() {
+        var t0 = _this2.context.currentTime;
+        var t1 = t0 + _this2.aheadTime;
+
+        _this2._process(t0, t1);
+      };
+
+      if (this._timerId === 0) {
+        this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
+
+        if (callback) {
+          this.insert(this.context.currentTime, callback);
+          loop();
+        }
+
+        this.emit("start");
+      } else {
+        this.insert(this.context.currentTime, callback);
+      }
+
+      return this;
+    }
+  }, {
+    key: "stop",
+    value: function stop(reset) {
+      if (this._timerId !== 0) {
+        this.timerAPI.clearInterval(this._timerId);
+        this._timerId = 0;
+
+        this.emit("stop");
+      }
+
+      if (reset) {
+        this._scheds.splice(0);
+      }
+
+      return this;
+    }
+  }, {
+    key: "insert",
+    value: function insert(time, callback, args) {
+      var id = ++this._schedId;
+      var event = { id: id, time: time, callback: callback, args: args };
+      var scheds = this._scheds;
+
+      if (scheds.length === 0 || scheds[scheds.length - 1].time <= time) {
+        scheds.push(event);
+      } else {
+        for (var i = 0, imax = scheds.length; i < imax; i++) {
+          if (time < scheds[i].time) {
+            scheds.splice(i, 0, event);
+            break;
+          }
+        }
+      }
+
+      return id;
+    }
+  }, {
+    key: "nextTick",
+    value: function nextTick(time, callback, args) {
+      if (typeof time === "function") {
+        args = callback;
+        callback = time;
+        time = this.playbackTime;
+      }
+
+      return this.insert(time + this.aheadTime, callback, args);
+    }
+  }, {
+    key: "remove",
+    value: function remove(schedId) {
+      var scheds = this._scheds;
+
+      if (typeof schedId === "number") {
+        for (var i = 0, imax = scheds.length; i < imax; i++) {
+          if (schedId === scheds[i].id) {
+            scheds.splice(i, 1);
+            break;
+          }
+        }
+      }
+
+      return schedId;
+    }
+  }, {
+    key: "removeAll",
+    value: function removeAll() {
+      this._scheds.splice(0);
+    }
+  }, {
+    key: "_process",
+    value: function _process(t0, t1) {
+      var scheds = this._scheds;
+
+      this.playbackTime = t0;
+      this.emit("process", { playbackTime: this.playbackTime });
+
+      while (scheds.length && scheds[0].time < t1) {
+        var event = scheds.shift();
+        var playbackTime = event.time;
+        var args = event.args;
+
+        this.playbackTime = playbackTime;
+
+        event.callback({ playbackTime: playbackTime, args: args });
+      }
+
+      this.playbackTime = t0;
+      this.emit("processed", { playbackTime: this.playbackTime });
+    }
+  }, {
+    key: "state",
+    get: function get() {
+      return this._timerId !== 0 ? "running" : "suspended";
+    }
+  }, {
+    key: "currentTime",
+    get: function get() {
+      return this.context.currentTime;
+    }
+  }, {
+    key: "events",
+    get: function get() {
+      return this._scheds.slice();
+    }
+  }]);
+
+  return WebAudioScheduler;
+}(events.EventEmitter);
+
+module.exports = WebAudioScheduler;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./defaultContext":3,"./utils/defaults":4,"events":1}],3:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  get currentTime() {
+    return Date.now() / 1000;
+  }
+};
+
+},{}],4:[function(require,module,exports){
+"use strict";
+
+function defaults(value, defaultValue) {
+  return value !== undefined ? value : defaultValue;
+}
+
+module.exports = defaults;
+
+},{}],5:[function(require,module,exports){
+"use strict";
+
+module.exports = require("./WebAudioScheduler");
+
+},{"./WebAudioScheduler":2}]},{},[5])(5)
 });
