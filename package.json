@@ -1,7 +1,7 @@
 {
   "name": "web-audio-scheduler",
   "description": "Event Scheduler for Web Audio API",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "author": "Nao Yonamine <mohayonao@gmail.com>",
   "bugs": {
     "url": "https://github.com/mohayonao/web-audio-scheduler/issues"

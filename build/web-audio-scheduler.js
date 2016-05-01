@@ -338,7 +338,7 @@ var WebAudioScheduler = function (_events$EventEmitter) {
 
   _createClass(WebAudioScheduler, [{
     key: "start",
-    value: function start(callback) {
+    value: function start(callback, args) {
       var _this2 = this;
 
       var loop = function loop() {
@@ -352,13 +352,13 @@ var WebAudioScheduler = function (_events$EventEmitter) {
         this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
 
         if (callback) {
-          this.insert(this.context.currentTime, callback);
+          this.insert(this.context.currentTime, callback, args);
           loop();
         }
 
         this.emit("start");
       } else {
-        this.insert(this.context.currentTime, callback);
+        this.insert(this.context.currentTime, callback, args);
       }
 
       return this;
