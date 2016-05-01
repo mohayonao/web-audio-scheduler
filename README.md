@@ -89,7 +89,7 @@ function stop() {
 - `events: object[]`
 
 #### Instance methods
-- `start([ callback: function ]): self`
+- `start([ callback: function, args: any ]): self`
   - Start the timeline.
   - The `callback` is inserted in the head of the event list if given.
 - `stop([ reset: boolean ]): self`
