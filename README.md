@@ -11,13 +11,13 @@ This module is developed based on the idea of this article.
 
 ## Installation
 
-npm:
+###### npm
 
 ```
 npm install web-audio-scheduler
 ```
 
-downloads:
+###### downloads
 
 - [web-audio-scheduler.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.js)
 - [web-audio-scheduler.min.js](https://raw.githubusercontent.com/mohayonao/web-audio-scheduler/master/build/web-audio-scheduler.min.js)
@@ -27,24 +27,24 @@ downloads:
 [metronome](http://mohayonao.github.io/web-audio-scheduler/)
 
 ```js
-let audioContext = new AudioContext();
-let sched = new WebAudioScheduler({
-  context: audioContext
-});
+const audioContext = new AudioContext();
+const sched = new WebAudioScheduler({ context: audioContext });
 
 function metronome(e) {
-  sched.insert(e.playbackTime + 0.000, ticktack, { frequency: 880, duration: 1.00 });
-  sched.insert(e.playbackTime + 0.500, ticktack, { frequency: 440, duration: 0.05 });
-  sched.insert(e.playbackTime + 1.000, ticktack, { frequency: 440, duration: 0.05 });
-  sched.insert(e.playbackTime + 1.500, ticktack, { frequency: 440, duration: 0.05 });
-  sched.insert(e.playbackTime + 2.000, metronome);
+  const t0 = e.playbackTime;
+
+  sched.insert(t0 + 0.000, ticktack, { frequency: 880, duration: 1.00 });
+  sched.insert(t0 + 0.500, ticktack, { frequency: 440, duration: 0.05 });
+  sched.insert(t0 + 1.000, ticktack, { frequency: 440, duration: 0.05 });
+  sched.insert(t0 + 1.500, ticktack, { frequency: 440, duration: 0.05 });
+  sched.insert(t0 + 2.000, metronome);
 }
 
 function ticktack(e) {
-  let t0 = e.playbackTime;
-  let t1 = t0 + e.args.duration;
-  let osc = audioContext.createOscillator();
-  let amp = audioContext.createGain();
+  const t0 = e.playbackTime;
+  const t1 = t0 + e.args.duration;
+  const osc = audioContext.createOscillator();
+  const amp = audioContext.createGain();
 
   osc.frequency.value = e.args.frequency;
   osc.start(t0);
@@ -61,13 +61,13 @@ function ticktack(e) {
   });
 }
 
-function start() {
-  sched.start(metronome);
-}
+document.getElementById("start-button").addEventListener("click", () => {
+  sched.start(metronome);  
+});
 
-function stop() {
+document.getElementById("stop-button").addEventListener("click", () => {
   sched.stop(true);
-}
+});
 ```
 
 ## API
@@ -105,6 +105,16 @@ function stop() {
   - Remove a callback function from the event list.
 - `removeAll(): void`
   - Remove all callback functions from the event list.
+
+#### Events
+- `"start"`
+  - emitted when the scheduler started.
+- `"stop"`
+  - emitted when the scheduler stopped.
+- `"process"`
+  - emitted before each scheduler process.
+- `"processed"`
+  - emitted after each scheduler process.
 
 #### Callback
 A callback function receives a schedule event and given arguments at `.insert()`.
@@ -144,10 +154,7 @@ time(ms) 0----25---50---75---100--125--150--175--200---->
 The below example is the same configuration as defaults.
 
 ```js
-let sched = new WebAudioScheduler({
-  interval: 0.025,
-  aheadTime: 0.1
-});
+const sched = new WebAudioScheduler({ interval: 0.025, aheadTime: 0.1 });
 ```
 
 ### timerAPI
@@ -162,11 +169,8 @@ TimerAPI is used instead of the native timer API. TimerAPI should have two funct
 The below example uses stable-timer instead of the native timer API.
 
 ```js
-import WorkerTimer from "worker-timer";
-
-let shced = new WebAudioScheduler({
-  timerAPI: WorkerTimer
-});
+const WorkerTimer = require("worker-timer");
+const sched = new WebAudioScheduler({ timerAPI: WorkerTimer });
 ```
 
 ## License
