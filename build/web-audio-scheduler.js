@@ -58,8 +58,12 @@ EventEmitter.prototype.emit = function(type) {
       er = arguments[1];
       if (er instanceof Error) {
         throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
       }
-      throw TypeError('Uncaught, unspecified "error" event.');
     }
   }
 
@@ -322,7 +326,7 @@ var WebAudioScheduler = function (_events$EventEmitter) {
 
     opts = opts || /* istanbul ignore next */{};
 
-    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(WebAudioScheduler).call(this));
+    var _this = _possibleConstructorReturn(this, (WebAudioScheduler.__proto__ || Object.getPrototypeOf(WebAudioScheduler)).call(this));
 
     _this.context = defaults(opts.context, defaultContext);
     _this.interval = defaults(opts.interval, 0.025);
@@ -351,13 +355,13 @@ var WebAudioScheduler = function (_events$EventEmitter) {
       if (this._timerId === 0) {
         this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
 
+        this.emit("start");
+
         if (callback) {
           this.insert(this.context.currentTime, callback, args);
           loop();
         }
-
-        this.emit("start");
-      } else {
+      } else if (callback) {
         this.insert(this.context.currentTime, callback, args);
       }
 
@@ -435,22 +439,23 @@ var WebAudioScheduler = function (_events$EventEmitter) {
     key: "_process",
     value: function _process(t0, t1) {
       var scheds = this._scheds;
+      var playbackTime = t0;
 
-      this.playbackTime = t0;
-      this.emit("process", { playbackTime: this.playbackTime });
+      this.playbackTime = playbackTime;
+      this.emit("process", { playbackTime: playbackTime });
 
       while (scheds.length && scheds[0].time < t1) {
         var event = scheds.shift();
-        var playbackTime = event.time;
+        var _playbackTime = event.time;
         var args = event.args;
 
-        this.playbackTime = playbackTime;
+        this.playbackTime = _playbackTime;
 
-        event.callback({ playbackTime: playbackTime, args: args });
+        event.callback({ playbackTime: _playbackTime, args: args });
       }
 
-      this.playbackTime = t0;
-      this.emit("processed", { playbackTime: this.playbackTime });
+      this.playbackTime = playbackTime;
+      this.emit("processed", { playbackTime: playbackTime });
     }
   }, {
     key: "state",
