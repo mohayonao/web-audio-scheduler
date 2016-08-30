@@ -35,8 +35,8 @@ class WebAudioScheduler extends events.EventEmitter {
 
   start(callback, args) {
     const loop = () => {
-      let t0 = this.context.currentTime;
-      let t1 = t0 + this.aheadTime;
+      const t0 = this.context.currentTime;
+      const t1 = t0 + this.aheadTime;
 
       this._process(t0, t1);
     };
@@ -44,13 +44,13 @@ class WebAudioScheduler extends events.EventEmitter {
     if (this._timerId === 0) {
       this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
 
+      this.emit("start");
+
       if (callback) {
         this.insert(this.context.currentTime, callback, args);
         loop();
       }
-
-      this.emit("start");
-    } else {
+    } else if (callback) {
       this.insert(this.context.currentTime, callback, args);
     }
 
@@ -73,9 +73,9 @@ class WebAudioScheduler extends events.EventEmitter {
   }
 
   insert(time, callback, args) {
-    let id = ++this._schedId;
-    let event = { id, time, callback, args };
-    let scheds = this._scheds;
+    const id = ++this._schedId;
+    const event = { id, time, callback, args };
+    const scheds = this._scheds;
 
     if (scheds.length === 0 || scheds[scheds.length - 1].time <= time) {
       scheds.push(event);
@@ -102,7 +102,7 @@ class WebAudioScheduler extends events.EventEmitter {
   }
 
   remove(schedId) {
-    let scheds = this._scheds;
+    const scheds = this._scheds;
 
     if (typeof schedId === "number") {
       for (let i = 0, imax = scheds.length; i < imax; i++) {
@@ -121,23 +121,24 @@ class WebAudioScheduler extends events.EventEmitter {
   }
 
   _process(t0, t1) {
-    let scheds = this._scheds;
+    const scheds = this._scheds;
+    const playbackTime = t0;
 
-    this.playbackTime = t0;
-    this.emit("process", { playbackTime: this.playbackTime });
+    this.playbackTime = playbackTime;
+    this.emit("process", { playbackTime });
 
     while (scheds.length && scheds[0].time < t1) {
-      let event = scheds.shift();
-      let playbackTime = event.time;
-      let args = event.args;
+      const event = scheds.shift();
+      const playbackTime = event.time;
+      const args = event.args;
 
       this.playbackTime = playbackTime;
 
       event.callback({ playbackTime, args });
     }
 
-    this.playbackTime = t0;
-    this.emit("processed", { playbackTime: this.playbackTime });
+    this.playbackTime = playbackTime;
+    this.emit("processed", { playbackTime });
   }
 }
 

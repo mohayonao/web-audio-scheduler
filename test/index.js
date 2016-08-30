@@ -1,6 +1,8 @@
 "use strict";
 
-const assert = require("power-assert");
+require("run-with-mocha");
+
+const assert = require("assert");
 const index = require("../src");
 const WebAudioScheduler = require("../src/WebAudioScheduler");
 
