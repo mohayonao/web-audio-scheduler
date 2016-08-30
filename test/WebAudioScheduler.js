@@ -1,7 +1,9 @@
 "use strict";
 
+require("run-with-mocha");
 require("web-audio-test-api");
-const assert = require("power-assert");
+
+const assert = require("assert");
 const sinon = require("sinon");
 const tickable = require("tickable-timer");
 const WebAudioScheduler = require("../src/WebAudioScheduler");
@@ -19,6 +21,7 @@ describe("WebAudioScheduler", () => {
       }
     };
   });
+
   beforeEach(() => {
     timestamp = 0;
     tickable.clearAllTimers();
@@ -27,12 +30,14 @@ describe("WebAudioScheduler", () => {
       timestamp += tick;
     });
   });
+
   after(() => {
     global.Date = BuiltInDate;
   });
+
   describe("constructor(opts: object = {})", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler();
+      const sched = new WebAudioScheduler();
 
       assert(sched instanceof WebAudioScheduler);
       assert(typeof sched.interval === "number");
@@ -41,8 +46,8 @@ describe("WebAudioScheduler", () => {
       assert(sched.timerAPI === global);
     });
     it("works with options", () => {
-      let context = new global.AudioContext();
-      let sched = new WebAudioScheduler({
+      const context = new global.AudioContext();
+      const sched = new WebAudioScheduler({
         context,
         interval: 0.1,
         aheadTime: 0.25,
@@ -57,7 +62,7 @@ describe("WebAudioScheduler", () => {
   });
   describe("#state: string", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler();
+      const sched = new WebAudioScheduler();
 
       assert(sched.state === "suspended");
 
@@ -70,14 +75,14 @@ describe("WebAudioScheduler", () => {
   });
   describe("#currentTime: number", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler();
+      const sched = new WebAudioScheduler();
 
       assert(typeof sched.currentTime === "number");
     });
   });
   describe("#events: object[]", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler();
+      const sched = new WebAudioScheduler();
 
       assert(Array.isArray(sched.events));
       assert(sched.events !== sched.events);
@@ -85,14 +90,14 @@ describe("WebAudioScheduler", () => {
   });
   describe("#start(callback: function): self", () => {
     it("returns self", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let returnValue = sched.start();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const returnValue = sched.start();
 
       assert(returnValue === sched);
     });
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let onStart = sinon.spy();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const onStart = sinon.spy();
 
       sched.on("start", onStart);
 
@@ -106,9 +111,9 @@ describe("WebAudioScheduler", () => {
       assert(onStart.callCount === 1);
     });
     it("works with callback", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let callback1 = sinon.spy();
-      let callback2 = sinon.spy();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const callback1 = sinon.spy();
+      const callback2 = sinon.spy();
 
       sched.start(callback1);
 
@@ -125,14 +130,14 @@ describe("WebAudioScheduler", () => {
   });
   describe("#stop(reset: boolean): self", () => {
     it("returns self", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let returnValue = sched.stop();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const returnValue = sched.stop();
 
       assert(returnValue === sched);
     });
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let onStop = sinon.spy();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const onStop = sinon.spy();
 
       sched.on("stop", onStop);
 
@@ -147,8 +152,8 @@ describe("WebAudioScheduler", () => {
       assert(onStop.callCount === 1);
     });
     it("works with reset flag", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let callback = sinon.spy();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const callback = sinon.spy();
 
       sched.start(callback);
       sched.stop(true);
@@ -164,11 +169,11 @@ describe("WebAudioScheduler", () => {
   });
   describe("#insert(time: number, callback: function, args: any[]): number", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let t1 = sched.currentTime + 0.1, callback1 = sinon.spy(), args1 = [ 1, 2 ];
-      let t2 = sched.currentTime + 0.3, callback2 = sinon.spy(), args2 = [ 3, 4 ];
-      let t3 = sched.currentTime + 0.2, callback3 = sinon.spy(), args3 = [ 5, 6 ];
-      let t4 = sched.currentTime + 0.4, callback4 = sinon.spy(), args4 = [ 7, 8 ];
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const t1 = sched.currentTime + 0.1, callback1 = sinon.spy(), args1 = [ 1, 2 ];
+      const t2 = sched.currentTime + 0.3, callback2 = sinon.spy(), args2 = [ 3, 4 ];
+      const t3 = sched.currentTime + 0.2, callback3 = sinon.spy(), args3 = [ 5, 6 ];
+      const t4 = sched.currentTime + 0.4, callback4 = sinon.spy(), args4 = [ 7, 8 ];
 
       sched.insert(t1, callback1, args1);
       sched.insert(t2, callback2, args2);
@@ -192,8 +197,8 @@ describe("WebAudioScheduler", () => {
   });
   describe("#nextTick(time: number, callback: function, args: any[]): number", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let callback = sinon.spy(), args = [ 1, 2, 3, 4, 5 ];
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const callback = sinon.spy(), args = [ 1, 2, 3, 4, 5 ];
 
       sched.nextTick(0.5, callback, args);
 
@@ -203,8 +208,8 @@ describe("WebAudioScheduler", () => {
       assert(sched.events[0].args === args);
     });
     it("works without time", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let callback = sinon.spy(), args = [ 1, 2, 3, 4, 5 ];
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const callback = sinon.spy(), args = [ 1, 2, 3, 4, 5 ];
 
       sched.nextTick(callback, args);
 
@@ -216,10 +221,10 @@ describe("WebAudioScheduler", () => {
   });
   describe("#remove(schedId: number): number", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let id1 = sched.insert(1, sinon.spy());
-      let id2 = sched.insert(2, sinon.spy());
-      let id3 = sched.nextTick(sinon.spy());
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const id1 = sched.insert(1, sinon.spy());
+      const id2 = sched.insert(2, sinon.spy());
+      const id3 = sched.nextTick(sinon.spy());
 
       assert(sched.events.length === 3);
 
@@ -242,7 +247,7 @@ describe("WebAudioScheduler", () => {
   });
   describe("#removeAll(): void", () => {
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
 
       sched.insert(1, sinon.spy());
       sched.insert(2, sinon.spy());
@@ -257,9 +262,9 @@ describe("WebAudioScheduler", () => {
   });
   describe("process", () => {
     it("event", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let onprocess = sinon.spy();
-      let onprocessed = sinon.spy();
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const onprocess = sinon.spy();
+      const onprocessed = sinon.spy();
 
       sched.on("process", onprocess);
       sched.on("processed", onprocessed);
@@ -289,11 +294,11 @@ describe("WebAudioScheduler", () => {
       assert(onprocessed.callCount === 0);
     });
     it("works", () => {
-      let sched = new WebAudioScheduler({ timerAPI: tickable });
-      let t1 = sched.currentTime + 0.3, callback1 = sinon.spy(), args1 = [ 1, 2 ];
-      let t2 = sched.currentTime + 0.2, callback2 = sinon.spy(), args2 = [ 3, 4 ];
-      let t3 = sched.currentTime + 0.4, callback3 = sinon.spy(), args3 = [ 5, 6 ];
-      let t4 = sched.currentTime + 0.1, callback4 = sinon.spy(), args4 = [ 7, 8 ];
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const t1 = sched.currentTime + 0.3, callback1 = sinon.spy(), args1 = [ 1, 2 ];
+      const t2 = sched.currentTime + 0.2, callback2 = sinon.spy(), args2 = [ 3, 4 ];
+      const t3 = sched.currentTime + 0.4, callback3 = sinon.spy(), args3 = [ 5, 6 ];
+      const t4 = sched.currentTime + 0.1, callback4 = sinon.spy(), args4 = [ 7, 8 ];
 
       sched.start();
       sched.insert(t1, callback1, args1);
@@ -343,12 +348,12 @@ describe("WebAudioScheduler", () => {
       assert(callback3.args[0][0].args === args3);
     });
     it("works with web audio api", () => {
-      let audioContext = new global.AudioContext();
-      let sched = new WebAudioScheduler({ context: audioContext, timerAPI: tickable });
-      let t1 = sched.currentTime + 0.3, callback1 = sinon.spy(), args1 = [ 1, 2 ];
-      let t2 = sched.currentTime + 0.2, callback2 = sinon.spy(), args2 = [ 3, 4 ];
-      let t3 = sched.currentTime + 0.4, callback3 = sinon.spy(), args3 = [ 5, 6 ];
-      let t4 = sched.currentTime + 0.1, callback4 = sinon.spy(), args4 = [ 7, 8 ];
+      const audioContext = new global.AudioContext();
+      const sched = new WebAudioScheduler({ context: audioContext, timerAPI: tickable });
+      const t1 = sched.currentTime + 0.3, callback1 = sinon.spy(), args1 = [ 1, 2 ];
+      const t2 = sched.currentTime + 0.2, callback2 = sinon.spy(), args2 = [ 3, 4 ];
+      const t3 = sched.currentTime + 0.4, callback3 = sinon.spy(), args3 = [ 5, 6 ];
+      const t4 = sched.currentTime + 0.1, callback4 = sinon.spy(), args4 = [ 7, 8 ];
 
       tickable.on("tick", (tick) => {
         audioContext.$process(tick / 1000);
