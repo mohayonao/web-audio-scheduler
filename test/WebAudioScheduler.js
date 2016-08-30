@@ -263,13 +263,29 @@ describe("WebAudioScheduler", () => {
   describe("process", () => {
     it("event", () => {
       const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const callback = sinon.spy();
+      const onstart = sinon.spy();
+      const onstop = sinon.spy();
       const onprocess = sinon.spy();
       const onprocessed = sinon.spy();
 
+      sched.on("start", onstart);
+      sched.on("stop", onstop);
       sched.on("process", onprocess);
       sched.on("processed", onprocessed);
-      sched.start();
 
+      sched.start(callback);
+      assert(callback.callCount === 1);
+      assert(onstart.callCount === 1);
+      assert(onstop.callCount === 0);
+      assert(onprocess.callCount === 1);
+      assert(onprocess.args[0][0].playbackTime === 0);
+      assert(onprocessed.callCount === 1);
+      assert(onprocessed.args[0][0].playbackTime === 0);
+      assert(onstart.calledBefore(callback));
+
+      onprocess.reset();
+      onprocessed.reset();
       tickable.tick(100);
 
       assert(onprocess.callCount === 4);
@@ -284,6 +300,7 @@ describe("WebAudioScheduler", () => {
       assert(onprocessed.args[3][0].playbackTime === 0.1);
 
       sched.stop();
+      assert(onstop.callCount === 1);
 
       onprocess.reset();
       onprocessed.reset();

@@ -44,13 +44,13 @@ class WebAudioScheduler extends events.EventEmitter {
     if (this._timerId === 0) {
       this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
 
+      this.emit("start");
+
       if (callback) {
         this.insert(this.context.currentTime, callback, args);
         loop();
       }
-
-      this.emit("start");
-    } else {
+    } else if (callback) {
       this.insert(this.context.currentTime, callback, args);
     }
 
