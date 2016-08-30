@@ -29,14 +29,15 @@ npm install web-audio-scheduler
 ```js
 const audioContext = new AudioContext();
 const sched = new WebAudioScheduler({ context: audioContext });
+let masterGain = null;
 
 function metronome(e) {
   const t0 = e.playbackTime;
 
-  sched.insert(t0 + 0.000, ticktack, { frequency: 880, duration: 1.00 });
-  sched.insert(t0 + 0.500, ticktack, { frequency: 440, duration: 0.05 });
-  sched.insert(t0 + 1.000, ticktack, { frequency: 440, duration: 0.05 });
-  sched.insert(t0 + 1.500, ticktack, { frequency: 440, duration: 0.05 });
+  sched.insert(t0 + 0.000, ticktack, { frequency: 880, duration: 1.0 });
+  sched.insert(t0 + 0.500, ticktack, { frequency: 440, duration: 0.1 });
+  sched.insert(t0 + 1.000, ticktack, { frequency: 440, duration: 0.1 });
+  sched.insert(t0 + 1.500, ticktack, { frequency: 440, duration: 0.1 });
   sched.insert(t0 + 2.000, metronome);
 }
 
@@ -53,13 +54,23 @@ function ticktack(e) {
 
   amp.gain.setValueAtTime(0.5, t0);
   amp.gain.exponentialRampToValueAtTime(1e-6, t1);
-  amp.connect(audioContext.destination);
+  amp.connect(masterGain);
 
   sched.nextTick(t1, () => {
     osc.disconnect();
     amp.disconnect();
   });
 }
+
+sched.on("start", () => {
+  masterGain = audioContext.createGain();
+  masterGain.connect(audioContext.destination);
+});
+
+sched.on("stop", () => {
+  masterGain.disconnect();
+  masterGain = null;
+});
 
 document.getElementById("start-button").addEventListener("click", () => {
   sched.start(metronome);  
