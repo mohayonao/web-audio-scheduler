@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+	<title>Testing web-audio-scheduler</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+  
+	<script type="text/javascript">
+
+  var freqs= {      
+        "v1":130.81, "v#1":138.59, "v2":146.83, "vb3":155.56, "v3":164.81
+      , "v4":174.61, "v#4":185, "v5":196, "v#5":207.65, "v6":220, "vb7":233.08
+      , "v7":246.94, "1":261.63, "#1":277.18, "2":293.66, "b3":311.13
+      , "3":329.63, "4":349.23, "#4":369.99, "5":392, "#5":415.3, "6":440
+      , "b7":466.16, "7":493.88, "'1":523.25, "'#1":554.37, "'2":587.33
+      , "'b3":622.25, "'3":659.26, "'4":698.46, "'#4":739.99, "'5":783.99
+      , "'#5":830.61, "'6":880, "'b7":932.33, "'7":987.77
+  }  
+  
+  var notes_Amazing_Grace=[ ["5",1], ["'1",2],["'3",0.75],["'1",0.25],["'3",2]
+            , ["'2",1], ["'1",2], ["6",1], ["5",2]];
+     
+  var notes_Come_Home_Sooner=[ 
+    ["3",1], ["3",1.5], ["4",0.5], ["3",1], ["1",0.5], ["v7",0.5], ["1",1.5]
+    , ["v7",0.5], ["v6",2], ["3",1.5], ["6",0.5], ["4",1], ["3",0.34]
+    , ["2",0.33], ["1",0.33], ["3",2], ["2",.5], ["3",0.5], ["4",1.5], ["6",0.5]
+    , ["4",1], ["3",0.5], ["2",.5], ["3",1.5], ["1",.5], ["v7",1], ["v6",0.5]
+    , ["v7",.5], ["1",1.5], ["3",.5], ["2",1], ["1",0.5], ["v6",.5], ["v7",3]    
+    ];
+    
+  var sched
+    , audioContext 
+    , speed=1.5
+    , masterGain = null
+    , notes= []
+
+
+function metronome(e) {
+
+  log.b()
+  
+  let t=0;
+  log(`e.playbacktime= ${e.playbackTime}`)
+  for(let i=0;i<notes.length;i++){
+    [nstr, dur] = notes[i]
+    dur = dur
+    sched.insert( e.playbackTime+ t, ticktack
+                  , { frequency: freqs[nstr], duration: dur, notestr:nstr})
+    t = t + dur 
+  }
+
+  log.e()
+
+}
+
+
+function ticktack(e) {
+  //log.b()
+  
+  let t0 = e.playbackTime;
+  let t1 = t0 + e.args.duration;
+  log(`ticktack: e.notestr= "${e.args.notestr}", duration=${e.args.duration}`)
+  let osc = audioContext.createOscillator();
+  let amp = audioContext.createGain();
+  
+  osc.frequency.value = e.args.frequency;
+  osc.start(t0);
+  osc.stop(t1);
+  osc.connect(amp);
+
+  amp.gain.setValueAtTime(1, t0);
+  //amp.gain.exponentialRampToValueAtTime(1e-6, t1);
+  amp.connect(masterGain); 
+  
+  sched.nextTick(t1, () => {
+    osc.disconnect();
+    amp.disconnect();
+  });
+  
+  //log.e()
+}
+
+
+function stop() {
+  log.b()
+  sched.stop(true);
+  log.e()
+}		
+
+function onstart_song(btn) {  // load song data into global var, notes
+
+  let songname = btn.id.split(':')[1]
+  log.b(`onstart_song(): ${songname}`)
+  sched.stop(true)
+  notes= eval('notes_'+songname).map((x)=> [x[0], x[1]/speed]);
+  sched.start(metronome);
+  log.e()
+  
+}
+
+function onbodyload(){   // Load jxlog.js for logging
+  jQuery.get('https://bitbucket.org/runsun/jxlog/raw/'+
+             '193083aae6fd268d0844e98cad8cec4137781c34/jxlog.js'
+  , function(data) {
+        eval(data);
+        window.log = jxlog
+        loadWebAudioScheduler()
+    }
+  );    
+}
+
+function loadWebAudioScheduler(){
+  
+  jQuery.get('https://raw.githubusercontent.com/mohayonao/'+
+             'web-audio-scheduler/master/build/web-audio-scheduler.js'
+  , (data)=>{ eval(data);
+              setupWebAudioScheduler()
+            }
+  )
+}
+  
+function setupWebAudioScheduler(){  
+  
+  audioContext = new AudioContext();
+  sched = new WebAudioScheduler({context: audioContext});                     
+  
+  sched.on("start", () => {
+    log.b('user onstart, renew masterGain')
+    masterGain = audioContext.createGain();
+    masterGain.connect(audioContext.destination);
+    log.e()
+  });
+
+  sched.on("stop", () => {
+    log.b('user onstop, disconnect/null masterGain')
+    masterGain.disconnect();
+    masterGain = null;
+    log.e()
+  });
+
+
+
+}
+
+  
+	</script>
+
+</head>
+<body onload='onbodyload()'>
+<h2>Testing <a href="https://github.com/mohayonao/web-audio-scheduler">web-audio-scheduler</a></h2>
+
+This page tests the usage of <code>web-audio-scheduler.js</code> by modifying the <a href="https://gist.github.com/mohayonao/6f7daddda053b975a705ce8437e434ce">metronome example</a> to play <i>partial</i> notes of two songs as shown below:<br/><br/>
+
+<b>Amazing Grace</b>: <button id='btnStart:Amazing_Grace' onclick='onstart_song(this)'>Play</button>
+
+<code><pre>
+[ ["5",1], ["'1",2],["'3",0.75],["'1",0.25],["'3",2]
+, ["'2",1], ["'1",2], ["6",1], ["5",2] ]
+</pre></code>
+
+<b>Come Home Sooner （望你早歸）</b>: <button id='btnStart:Come_Home_Sooner' onclick='onstart_song(this)'>Play</button>
+
+<code><pre>
+[ ["3",1], ["3",1.5], ["4",0.5], ["3",1], ["1",0.5], ["v7",0.5], ["1",1.5]
+, ["v7",0.5], ["v6",2], ["3",1.5], ["6",0.5], ["4",1], ["3",0.34]
+, ["2",0.33], ["1",0.33], ["3",2], ["2",.5], ["3",0.5], ["4",1.5], ["6",0.5]
+, ["4",1], ["3",0.5], ["2",.5], ["3",1.5], ["1",.5], ["v7",1], ["v6",0.5]
+, ["v7",.5], ["1",1.5], ["3",.5], ["2",1], ["1",0.5], ["v6",.5], ["v7",3]    
+]
+</pre></code>
+
+
+<hr/>
+<button id='btnStop' onclick='stop()'>Stop</button>
+    
+	</script>
+	
+</body>
+</html>
