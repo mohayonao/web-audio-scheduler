@@ -50,7 +50,7 @@
     "build": "npm-run-all build:to5 build:browser build:minify",
     "build:browser": "mkdir -p build && BABEL_ENV=production browserify src -s WebAudioScheduler -o build/web-audio-scheduler.js -t [ babelify ]",
     "build:minify": "uglifyjs build/web-audio-scheduler.js -o build/web-audio-scheduler.min.js",
-    "build:to5": "babel src --out-dir lib",
+    "build:to5": "BABEL_ENV=production babel src --out-dir lib",
     "clean": "rm -rf lib coverage .nyc_output npm-debug.log",
     "cover": "BABEL_ENV=coverage nyc --reporter text --reporter html npm test",
     "lint": "eslint src test",
