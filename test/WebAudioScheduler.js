@@ -151,20 +151,39 @@ describe("WebAudioScheduler", () => {
       assert(tickable.timers.length === 0);
       assert(onStop.callCount === 1);
     });
+    it("works without reset flag", () => {
+      const sched = new WebAudioScheduler({ timerAPI: tickable });
+      const callback = sinon.spy();
+
+      sched.start();
+      sched.insert(0, callback);
+
+      sched.stop();
+
+      assert(tickable.timers.length === 0);
+      assert(sched.events.length === 0);
+
+      sched.stop();
+
+      assert(tickable.timers.length === 0);
+      assert(sched.events.length === 0);
+    });
     it("works with reset flag", () => {
       const sched = new WebAudioScheduler({ timerAPI: tickable });
       const callback = sinon.spy();
 
       sched.start(callback);
-      sched.stop(true);
+      sched.insert(0, callback);
+
+      sched.stop(false);
 
       assert(tickable.timers.length === 0);
-      assert(sched.events.length === 0);
+      assert(sched.events.length === 1);
 
-      sched.stop(true);
+      sched.stop(false);
 
       assert(tickable.timers.length === 0);
-      assert(sched.events.length === 0);
+      assert(sched.events.length === 1);
     });
   });
   describe("#insert(time: number, callback: function, args: any[]): number", () => {
