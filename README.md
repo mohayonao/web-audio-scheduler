@@ -103,7 +103,7 @@ document.getElementById("stop-button").addEventListener("click", () => {
 - `start([ callback: function, args: any ]): self`
   - Start the timeline.
   - The `callback` is inserted in the head of the event list if given.
-- `stop([ reset: boolean ]): self`
+- `stop([ reset = true: boolean ]): self`
   - Stop the timeline.
   - The event list is cleared if `reset` is truthy.
 - `insert(time: number, callback: function, [ args: any ]): number`
