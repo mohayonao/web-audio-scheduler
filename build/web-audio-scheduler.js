@@ -369,7 +369,9 @@ var WebAudioScheduler = function (_events$EventEmitter) {
     }
   }, {
     key: "stop",
-    value: function stop(reset) {
+    value: function stop() {
+      var reset = arguments.length <= 0 || arguments[0] === undefined ? true : arguments[0];
+
       if (this._timerId !== 0) {
         this.timerAPI.clearInterval(this._timerId);
         this._timerId = 0;
