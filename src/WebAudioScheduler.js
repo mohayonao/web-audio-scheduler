@@ -57,7 +57,7 @@ class WebAudioScheduler extends events.EventEmitter {
     return this;
   }
 
-  stop(reset) {
+  stop(reset = true) {
     if (this._timerId !== 0) {
       this.timerAPI.clearInterval(this._timerId);
       this._timerId = 0;
