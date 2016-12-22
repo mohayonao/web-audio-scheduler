@@ -34,12 +34,7 @@ class WebAudioScheduler extends events.EventEmitter {
   }
 
   start(callback, args) {
-    const loop = () => {
-      const t0 = this.context.currentTime;
-      const t1 = t0 + this.aheadTime;
-
-      this._process(t0, t1);
-    };
+    const loop = this.process.bind(this);
 
     if (this._timerId === 0) {
       this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
@@ -118,6 +113,13 @@ class WebAudioScheduler extends events.EventEmitter {
 
   removeAll() {
     this._scheds.splice(0);
+  }
+
+  process() {
+    const t0 = this.context.currentTime;
+    const t1 = t0 + this.aheadTime;
+
+    this._process(t0, t1);
   }
 
   _process(t0, t1) {
