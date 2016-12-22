@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8">
     <title>web-audio-scheduler</title>
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href=//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
     <style>
       #code { padding: 0; margin: 0; background: white; border: none }
       #app { margin: 10px 0 }
       #app .btn { width: 100px }
     </style>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
     <script src="build/web-audio-scheduler.min.js"></script>
   </head>
   <body>
@@ -18,9 +18,9 @@
       <div class="page-header">
         <h1>web-audio-scheduler</h1>
         <div>
-          <a href="https://travis-ci.org/mohayonao/web-audio-scheduler"><img src="http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat-square"/></a>
-          <a href="https://www.npmjs.org/package/web-audio-scheduler"><img src="http://img.shields.io/npm/v/web-audio-scheduler.svg?style=flat-square"/></a>
-          <a href="http://mohayonao.mit-license.org/"><img src="http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"/></a>
+          <a href="https://travis-ci.org/mohayonao/web-audio-scheduler"><img src="https://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat-square"/></a>
+          <a href="https://www.npmjs.org/package/web-audio-scheduler"><img src="https://img.shields.io/npm/v/web-audio-scheduler.svg?style=flat-square"/></a>
+          <a href="https://mohayonao.mit-license.org/"><img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"/></a>
         </div>
       </div>
       <div>Event Scheduler for Web Audio API | <a href="https://github.com/mohayonao/web-audio-scheduler" target="github">GitHub</a></div>
@@ -86,9 +86,9 @@
         var t0 = e.playbackTime;
 
         sched.insert(t0 + 0.000, ticktack, { frequency: 880, duration: 1.0 });
-        sched.insert(t0 + 0.500, ticktack, { frequency: 440, duration: 0.1 });
-        sched.insert(t0 + 1.000, ticktack, { frequency: 440, duration: 0.1 });
-        sched.insert(t0 + 1.500, ticktack, { frequency: 440, duration: 0.1 });
+        sched.insert(t0 + 0.500, ticktack, { frequency: 440, duration: 0.2 });
+        sched.insert(t0 + 1.000, ticktack, { frequency: 440, duration: 0.2 });
+        sched.insert(t0 + 1.500, ticktack, { frequency: 440, duration: 0.2 });
         sched.insert(t0 + 2.000, metronome);
       }
 
@@ -130,6 +130,15 @@
       function stop() {
         sched.stop(true);
       }
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          sched.aheadTime = 0.1;
+        } else {
+          sched.aheadTime = 1.0;
+          sched.process();
+        }
+      });
     </script>
   </body>
 </html>
