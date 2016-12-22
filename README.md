@@ -1,13 +1,13 @@
 # web-audio-scheduler
-[![Build Status](http://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat-square)](https://travis-ci.org/mohayonao/web-audio-scheduler)
-[![NPM Version](http://img.shields.io/npm/v/web-audio-scheduler.svg?style=flat-square)](https://www.npmjs.org/package/web-audio-scheduler)
-[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://mohayonao.mit-license.org/)
+[![Build Status](https://img.shields.io/travis/mohayonao/web-audio-scheduler.svg?style=flat-square)](https://travis-ci.org/mohayonao/web-audio-scheduler)
+[![NPM Version](https://img.shields.io/npm/v/web-audio-scheduler.svg?style=flat-square)](https://www.npmjs.org/package/web-audio-scheduler)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://mohayonao.mit-license.org/)
 
 > Event Scheduler for Web Audio API
 
 This module is developed based on the idea of this article.
 
- - http://www.html5rocks.com/en/tutorials/audio/scheduling/
+ - https://www.html5rocks.com/en/tutorials/audio/scheduling/
 
 ## Installation
 
@@ -24,7 +24,7 @@ npm install web-audio-scheduler
 
 ## Examples
 
-[metronome](http://mohayonao.github.io/web-audio-scheduler/)
+[metronome](https://mohayonao.github.io/web-audio-scheduler/)
 
 ```js
 const audioContext = new AudioContext();
@@ -72,6 +72,15 @@ sched.on("stop", () => {
   masterGain = null;
 });
 
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    sched.aheadTime = 0.1;
+  } else {
+    sched.aheadTime = 1.0;
+    sched.process();
+  }
+});
+
 document.getElementById("start-button").addEventListener("click", () => {
   sched.start(metronome);  
 });
@@ -116,6 +125,8 @@ document.getElementById("stop-button").addEventListener("click", () => {
   - Remove a callback function from the event list.
 - `removeAll(): void`
   - Remove all callback functions from the event list.
+- `process(): void`
+  - process events immediately (this is useful when transition to background tabs)
 
 #### Events
 - `"start"`
