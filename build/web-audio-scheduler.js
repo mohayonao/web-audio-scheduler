@@ -343,14 +343,7 @@ var WebAudioScheduler = function (_events$EventEmitter) {
   _createClass(WebAudioScheduler, [{
     key: "start",
     value: function start(callback, args) {
-      var _this2 = this;
-
-      var loop = function loop() {
-        var t0 = _this2.context.currentTime;
-        var t1 = t0 + _this2.aheadTime;
-
-        _this2._process(t0, t1);
-      };
+      var loop = this.process.bind(this);
 
       if (this._timerId === 0) {
         this._timerId = this.timerAPI.setInterval(loop, this.interval * 1000);
@@ -370,7 +363,7 @@ var WebAudioScheduler = function (_events$EventEmitter) {
   }, {
     key: "stop",
     value: function stop() {
-      var reset = arguments.length <= 0 || arguments[0] === undefined ? true : arguments[0];
+      var reset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
       if (this._timerId !== 0) {
         this.timerAPI.clearInterval(this._timerId);
@@ -436,6 +429,14 @@ var WebAudioScheduler = function (_events$EventEmitter) {
     key: "removeAll",
     value: function removeAll() {
       this._scheds.splice(0);
+    }
+  }, {
+    key: "process",
+    value: function process() {
+      var t0 = this.context.currentTime;
+      var t1 = t0 + this.aheadTime;
+
+      this._process(t0, t1);
     }
   }, {
     key: "_process",
